@@ -132,59 +132,41 @@ async function run() {
 async function setupClient(app, directory) {
   try {
     console.log(`[CLIENT] Setting up STIG Manager client...`)
-    let options = {
-      all: false,
-      diff: false,
-      protect: false,
-      syntax: 'default',
-      system: true
-    }   
     const envJS = 
 `
-Ext.ns('STIGMAN')
-
-STIGMAN.Env = {
+const STIGMAN = {
+  Env: {
     version: "${config.version}",
-    apiBase: "${process.env.STIGMAN_CLIENT_API_BASE ?? '/api'}",
+    apiBase: "${config.client.apiBase}",
     commit: {
-        branch: "${process.env.COMMIT_BRANCH ?? 'na'}",
-        sha: "${process.env.COMMIT_SHA ?? 'na'}",
-        tag: "${process.env.COMMIT_TAG ?? 'na'}",
-        describe: "${process.env.COMMIT_DESCRIBE ?? 'na'}"
+        branch: "${config.commit.branch}",
+        sha: "${config.commit.sha}",
+        tag: "${config.commit.tag}",
+        describe: "${config.commit.describe}"
+    },
+    refreshToken: {
+      enabled: ${config.oauth.refreshToken.enabled}
     },
     oauth: {
+        authority:  "${config.client.authority}",
+        clientId: "${config.client.clientId}"
         claims: {
-            username: "${config.oauth.claims.username}",
-            servicename: "${config.oauth.claims.servicename}",
-            name: "${config.oauth.claims.name}}",
-            roles: "${config.oauth.claims.roles}",
-            email: "${config.oauth.claims.email}"
+          scope: "${config.oauth.claims.scope}",
+          scopeFormat: "${config.oauth.claims.scopeFormat}",
+          username: "${config.oauth.claims.username}",
+          servicename: "${config.oauth.claims.servicename}",
+          name: "${config.oauth.claims.name}",
+          roles: "${config.oauth.claims.roles}",
+          email: "${config.oauth.claims.email}"
         }
     }
+  }
 }    
 `
-
-    const keycloakJson = 
-`
-{
-  "realm": "${process.env.STIGMAN_CLIENT_KEYCLOAK_REALM ?? 'stigman'}",
-  "auth-server-url": "${process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH ?? 'http://localhost:8080/auth'}",
-  "ssl-required": "external",
-  "resource": "${process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID ?? 'stig-manager'}",
-  "public-client": true,
-  "confidential-port": 0
-}    
-`
-
     app.get('/js/Env.js', function (req, res) {
       writer.writeWithContentType(res, {payload: envJS, contentType: "application/javascript"})
     })
-    app.get('/js/keycloak.json', function (req, res) {
-      writer.writeWithContentType(res, {payload: keycloakJson, contentType: "application/json"})
-    })
-
     app.use('/', express.static(path.join(__dirname, directory)))
-
   }
   catch (err) {
     console.error(err.message)

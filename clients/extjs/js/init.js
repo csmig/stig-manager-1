@@ -1,7 +1,8 @@
 async function authorizeOidc() {
     let oidcProvider = OidcProvider({
-        oidcProvider: 'https://dev-20312887.okta.com/oauth2/default',
-        clientId: '0oa15s1xbhJtGfytI5d7'
+        oidcProvider: STIGMAN.Env.oauth.authority,
+        clientId: STIGMAN.Env.oauth.clientId, //'0oa15s1xbhJtGfytI5d7'
+        refreshEnabled: STIGMAN.Env.oauth.refreshToken.enabled
     });
     oidcProvider.refreshExpWarnCallback = function (expTs) {
        oidcProvider.onRefreshExpWarn && oidcProvider.onRefreshExpWarn(expTs)
@@ -29,8 +30,7 @@ async function authorizeOidc() {
         // oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
         // console.info(`authRefreshSuccess: refresh expires ${refreshExpDate}`)
     }
-   
-
+    
     try {
         window.oidcProvider = oidcProvider
         let response = await oidcProvider.init({ 

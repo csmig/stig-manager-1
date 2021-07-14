@@ -13,6 +13,9 @@ let config = {
         lastAccessResolution: 60
     },
     client: {
+        clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",
+        authority: process.env.STIGMAN_CLIENT_AUTHORITY || process.env.STIGMAN_OAUTH_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
+        apiBase: process.env.STIGMAN_CLIENT_API_BASE || "/api",
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
         directory: process.env.STIGMAN_CLIENT_DIRECTORY || "./client"
     },
@@ -44,13 +47,18 @@ let config = {
     },
     swaggerUi: {
         enabled: process.env.STIGMAN_SWAGGER_ENABLED === "true", 
-        authority: process.env.STIGMAN_SWAGGER_AUTHORITY || "http://localhost:8080/auth/realms/stigman", 
+        authority: process.env.STIGMAN_OAUTH_AUTHORITY || process.env.STIGMAN_SWAGGER_AUTHORITY || "http://localhost:8080/auth/realms/stigman", 
         server: process.env.STIGMAN_SWAGGER_SERVER || "http://localhost:54000/api",
         oauth2RedirectUrl: process.env.STIGMAN_SWAGGER_REDIRECT || "http://localhost:54000/api-docs/oauth2-redirect.html"
     },
     oauth: {
-        authority: process.env.STIGMAN_API_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
+        authority: process.env.STIGMAN_OAUTH_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
+        refreshToken: {
+            enabled: process.env.STIGMAN_OAUTH_ENABLE_REFRESH === "true",
+        },
         claims: {
+            scope: process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope",
+            scopeFormat: process.env.STIGMAN_JWT_SCOPE_FORMAT || "ssv",
             username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM || "clientId",
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
