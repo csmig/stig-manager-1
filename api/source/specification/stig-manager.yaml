@@ -3682,10 +3682,11 @@ components:
     oauth:
       type: oauth2
       flows:
-        implicit:
-          authorizationUrl: >-
-            http://localhost:8080/auth/realms/stigman/protocol/openid-connect/auth
+        authorizationCode:
+          authorizationUrl: https://dev-20312887.okta.com/oauth2/default/v1/authorize
+          tokenUrl: https://dev-20312887.okta.com/oauth2/default/v1/token
           scopes:
+            openid: OIDC
             stig-manager: Top-accessLevel scope
             'stig-manager:op': Full access to the Operation endpoints
             'stig-manager:op:read': Read access to the Operation endpoints

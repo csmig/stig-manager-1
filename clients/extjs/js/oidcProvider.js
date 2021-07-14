@@ -20,7 +20,7 @@
         if ( typeof module === 'object' ) {
             module.exports = factory( require("js-sha256"), require("base64-js") );
         } else {
-            exports["keycloak"] = factory( require("js-sha256"), require("base64-js") );
+            exports["oidcProvider"] = factory( require("js-sha256"), require("base64-js") );
         }
     } else {
         /**
@@ -53,16 +53,16 @@
          */
         !function(e,n){"object"==typeof exports&&"undefined"!=typeof module?n():"function"==typeof define&&define.amd?define(n):n()}(0,function(){"use strict";function e(e){var n=this.constructor;return this.then(function(t){return n.resolve(e()).then(function(){return t})},function(t){return n.resolve(e()).then(function(){return n.reject(t)})})}function n(e){return!(!e||"undefined"==typeof e.length)}function t(){}function o(e){if(!(this instanceof o))throw new TypeError("Promises must be constructed via new");if("function"!=typeof e)throw new TypeError("not a function");this._state=0,this._handled=!1,this._value=undefined,this._deferreds=[],c(e,this)}function r(e,n){for(;3===e._state;)e=e._value;0!==e._state?(e._handled=!0,o._immediateFn(function(){var t=1===e._state?n.onFulfilled:n.onRejected;if(null!==t){var o;try{o=t(e._value)}catch(r){return void f(n.promise,r)}i(n.promise,o)}else(1===e._state?i:f)(n.promise,e._value)})):e._deferreds.push(n)}function i(e,n){try{if(n===e)throw new TypeError("A promise cannot be resolved with itself.");if(n&&("object"==typeof n||"function"==typeof n)){var t=n.then;if(n instanceof o)return e._state=3,e._value=n,void u(e);if("function"==typeof t)return void c(function(e,n){return function(){e.apply(n,arguments)}}(t,n),e)}e._state=1,e._value=n,u(e)}catch(r){f(e,r)}}function f(e,n){e._state=2,e._value=n,u(e)}function u(e){2===e._state&&0===e._deferreds.length&&o._immediateFn(function(){e._handled||o._unhandledRejectionFn(e._value)});for(var n=0,t=e._deferreds.length;t>n;n++)r(e,e._deferreds[n]);e._deferreds=null}function c(e,n){var t=!1;try{e(function(e){t||(t=!0,i(n,e))},function(e){t||(t=!0,f(n,e))})}catch(o){if(t)return;t=!0,f(n,o)}}var a=setTimeout;o.prototype["catch"]=function(e){return this.then(null,e)},o.prototype.then=function(e,n){var o=new this.constructor(t);return r(this,new function(e,n,t){this.onFulfilled="function"==typeof e?e:null,this.onRejected="function"==typeof n?n:null,this.promise=t}(e,n,o)),o},o.prototype["finally"]=e,o.all=function(e){return new o(function(t,o){function r(e,n){try{if(n&&("object"==typeof n||"function"==typeof n)){var u=n.then;if("function"==typeof u)return void u.call(n,function(n){r(e,n)},o)}i[e]=n,0==--f&&t(i)}catch(c){o(c)}}if(!n(e))return o(new TypeError("Promise.all accepts an array"));var i=Array.prototype.slice.call(e);if(0===i.length)return t([]);for(var f=i.length,u=0;i.length>u;u++)r(u,i[u])})},o.resolve=function(e){return e&&"object"==typeof e&&e.constructor===o?e:new o(function(n){n(e)})},o.reject=function(e){return new o(function(n,t){t(e)})},o.race=function(e){return new o(function(t,r){if(!n(e))return r(new TypeError("Promise.race accepts an array"));for(var i=0,f=e.length;f>i;i++)o.resolve(e[i]).then(t,r)})},o._immediateFn="function"==typeof setImmediate&&function(e){setImmediate(e)}||function(e){a(e,0)},o._unhandledRejectionFn=function(e){void 0!==console&&console&&console.warn("Possible Unhandled Promise Rejection:",e)};var l=function(){if("undefined"!=typeof self)return self;if("undefined"!=typeof window)return window;if("undefined"!=typeof global)return global;throw Error("unable to locate global object")}();"Promise"in l?l.Promise.prototype["finally"]||(l.Promise.prototype["finally"]=e):l.Promise=o});
 
-        var Keycloak = factory( root["sha256"], root["base64js"] );
-        root["Keycloak"] = Keycloak;
+        var OidcProvider = factory( root["sha256"], root["base64js"] );
+        root["OidcProvider"] = OidcProvider;
 
         if ( typeof define === "function" && define.amd ) {
-            define( "keycloak", [], function () { return Keycloak; } );
+            define( "oidcProvider", [], function () { return OidcProvider; } );
         }
     }
 })(window, function (sha256_imported, base64js_imported) {
     if (typeof Promise === 'undefined') {
-        throw Error('Keycloak requires an environment that supports Promises. Make sure that you include the appropriate polyfill.');
+        throw Error('OidcProvider requires an environment that supports Promises. Make sure that you include the appropriate polyfill.');
     }
 
     var loggedPromiseDeprecation = false;
@@ -74,41 +74,41 @@
         }
     }
 
-    function toKeycloakPromise(promise) {
-        promise.__proto__ = KeycloakPromise.prototype;
+    function toOidcProviderPromise(promise) {
+        promise.__proto__ = OidcProviderPromise.prototype;
         return promise;
     }
 
-    function KeycloakPromise(executor) {
-        return toKeycloakPromise(new Promise(executor));
+    function OidcProviderPromise(executor) {
+        return toOidcProviderPromise(new Promise(executor));
     }
 
-    KeycloakPromise.prototype = Object.create(Promise.prototype);
-    KeycloakPromise.prototype.constructor = KeycloakPromise;
+    OidcProviderPromise.prototype = Object.create(Promise.prototype);
+    OidcProviderPromise.prototype.constructor = OidcProviderPromise;
 
-    KeycloakPromise.prototype.success = function(callback) {
+    OidcProviderPromise.prototype.success = function(callback) {
         logPromiseDeprecation();
 
         var promise = this.then(function handleSuccess(value) {
             callback(value);
         });
 
-        return toKeycloakPromise(promise);
+        return toOidcProviderPromise(promise);
     };
 
-    KeycloakPromise.prototype.error = function(callback) {
+    OidcProviderPromise.prototype.error = function(callback) {
         logPromiseDeprecation();
 
         var promise = this.catch(function handleError(error) {
             callback(error);
         });
 
-        return toKeycloakPromise(promise);
+        return toOidcProviderPromise(promise);
     };
 
-    function Keycloak (config) {
-        if (!(this instanceof Keycloak)) {
-            return new Keycloak(config);
+    function OidcProvider (config) {
+        if (!(this instanceof OidcProvider)) {
+            return new OidcProvider(config);
         }
 
         var kc = this;
@@ -124,7 +124,7 @@
 
         var scripts = document.getElementsByTagName('script');
         for (var i = 0; i < scripts.length; i++) {
-            if ((scripts[i].src.indexOf('keycloak.js') !== -1 || scripts[i].src.indexOf('keycloak.min.js') !== -1) && scripts[i].src.indexOf('version=') !== -1) {
+            if ((scripts[i].src.indexOf('oidcProvider.js') !== -1 || scripts[i].src.indexOf('oidcProvider.min.js') !== -1) && scripts[i].src.indexOf('version=') !== -1) {
                 kc.iframeVersion = scripts[i].src.substring(scripts[i].src.indexOf('version=') + 8).split('&')[0];
             }
         }
@@ -266,7 +266,7 @@
                     var ifrm = document.createElement("iframe");
                     var src = kc.createLoginUrl({prompt: 'none', redirectUri: kc.silentCheckSsoRedirectUri});
                     ifrm.setAttribute("src", src);
-                    ifrm.setAttribute("title", "keycloak-silent-check-sso");
+                    ifrm.setAttribute("title", "oidcProvider-silent-check-sso");
                     ifrm.style.display = "none";
                     document.body.appendChild(ifrm);
 
@@ -838,7 +838,7 @@
             var configUrl;
 
             if (!config) {
-                configUrl = 'keycloak.json';
+                configUrl = 'oidcProvider.json';
             } else if (typeof config === 'string') {
                 configUrl = config;
             }
@@ -943,8 +943,8 @@
                     if (!config['url']) {
                         var scripts = document.getElementsByTagName('script');
                         for (var i = 0; i < scripts.length; i++) {
-                            if (scripts[i].src.match(/.*keycloak\.js/)) {
-                                config.url = scripts[i].src.substr(0, scripts[i].src.indexOf('/js/keycloak.js'));
+                            if (scripts[i].src.match(/.*oidcProvider\.js/)) {
+                                config.url = scripts[i].src.substr(0, scripts[i].src.indexOf('/js/oidcProvider.js'));
                                 break;
                             }
                         }
@@ -1198,7 +1198,7 @@
                     p.reject(result);
                 }
             };
-            p.promise = new KeycloakPromise(function(resolve, reject) {
+            p.promise = new OidcProviderPromise(function(resolve, reject) {
                 p.resolve = resolve;
                 p.reject = reject;
             });
@@ -1234,7 +1234,7 @@
 
             var src = kc.endpoints.checkSessionIframe();
             iframe.setAttribute('src', src );
-            iframe.setAttribute('title', 'keycloak-session-iframe' );
+            iframe.setAttribute('title', 'oidcProvider-session-iframe' );
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
 
@@ -1306,7 +1306,7 @@
             if (loginIframe.enable || kc.silentCheckSsoRedirectUri) {
                 var iframe = document.createElement('iframe');
                 iframe.setAttribute('src', kc.endpoints.thirdPartyCookiesIframe());
-                iframe.setAttribute('title', 'keycloak-3p-check-iframe' );
+                iframe.setAttribute('title', 'oidcProvider-3p-check-iframe' );
                 iframe.style.display = 'none';
                 document.body.appendChild(iframe);
 
@@ -1548,8 +1548,8 @@
                         var promise = createPromise();
                         var loginUrl = kc.createLoginUrl(options);
 
-                        universalLinks.subscribe('keycloak', function(event) {
-                            universalLinks.unsubscribe('keycloak');
+                        universalLinks.subscribe('oidcProvider', function(event) {
+                            universalLinks.unsubscribe('oidcProvider');
                             window.cordova.plugins.browsertab.close();
                             var oauth = parseCallback(event.url);
                             processCallback(oauth, promise);
@@ -1563,8 +1563,8 @@
                         var promise = createPromise();
                         var logoutUrl = kc.createLogoutUrl(options);
 
-                        universalLinks.subscribe('keycloak', function(event) {
-                            universalLinks.unsubscribe('keycloak');
+                        universalLinks.subscribe('oidcProvider', function(event) {
+                            universalLinks.unsubscribe('oidcProvider');
                             window.cordova.plugins.browsertab.close();
                             kc.clearToken();
                             promise.setSuccess();
@@ -1577,8 +1577,8 @@
                     register : function(options) {
                         var promise = createPromise();
                         var registerUrl = kc.createRegisterUrl(options);
-                        universalLinks.subscribe('keycloak' , function(event) {
-                            universalLinks.unsubscribe('keycloak');
+                        universalLinks.subscribe('oidcProvider' , function(event) {
+                            universalLinks.unsubscribe('oidcProvider');
                             window.cordova.plugins.browsertab.close();
                             var oauth = parseCallback(event.url);
                             processCallback(oauth, promise);
@@ -1740,5 +1740,5 @@
         }
     }
 
-    return Keycloak;
+    return OidcProvider;
 })

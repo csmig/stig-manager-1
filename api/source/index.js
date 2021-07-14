@@ -84,7 +84,7 @@ for (const path in oasDoc.paths) {
 
 // Replace host with environmental values
 oasDoc.servers[0].url = config.swaggerUi.server
-oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${config.swaggerUi.authority}/protocol/openid-connect/auth`
+// oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${config.swaggerUi.authority}/protocol/openid-connect/auth`
 
 // Initialize the Swagger middleware
 oasTools.configure(options)
@@ -102,7 +102,10 @@ async function run() {
     }
     if (config.swaggerUi.enabled) {
       app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
-        oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl
+        oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl,
+        oauth: {
+          usePkceWithAuthorizationCodeGrant: true
+        }
       }))
       app.get('/swagger.json', function(req, res) {
           res.setHeader('Content-Type', 'application/json');
