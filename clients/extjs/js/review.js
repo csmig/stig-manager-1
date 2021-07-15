@@ -1454,7 +1454,7 @@ async function addReview( params ) {
     var actionComment = Ext.getCmp('action-comment' + idAppend);
     var button1 = Ext.getCmp('reviewForm-button-1' + idAppend); // left button
     var button2 = Ext.getCmp('reviewForm-button-2' + idAppend); // right button
-    var attachButton = Ext.getCmp('attachmentsGrid' + idAppend).fileUploadField.button; // 'add attachment' button
+    var attachButton = Ext.getCmp('attachmentsGrid' + idAppend).fileUploadField; // 'add attachment' button
     var autoResultField = Ext.getCmp('autoResult' + idAppend); // hidden 'autoResult' field
 
     // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
@@ -1489,32 +1489,12 @@ async function addReview( params ) {
     //Disable the add attachment button if the review has not been saved yet
     if (fp.groupGridRecord.data.result == "") {
       attachButton.disable();
-      attachButton.setTooltip('This button is disabled because the review has never been saved.');
+      attachButton.button.setTooltip('This button is disabled because the review has never been saved.');
     } else {
       attachButton.enable();
       //attachButton.setTooltip('Attach a file to this review.'); 
-      attachButton.setTooltip('');
+      attachButton.button.setTooltip('');
     }
-
-    // // Quick hide of the buttons and exit if review status is 'Approved', 
-    // // otherwise show the buttons and continue processing below
-    // if (fp.groupGridRecord.data.status == 'accepted') {
-    //   button1.show();
-    //   button2.show();
-    //   attachButton.disable();
-    //   attachButton.setTooltip('This button is disabled because the review is locked.');
-    // } else {
-    //   button1.show();
-    //   button2.show();
-    //   if (fp.groupGridRecord.data.status == 'submitted') {
-    //     attachButton.disable();
-    //     attachButton.setTooltip('This button is disabled because the review is submitted');
-    //   } else {
-    //     attachButton.enable();
-    //     attachButton.setTooltip('');
-    //   }
-    // }
-
 
     if (isReviewComplete(resultCombo.value, resultComment.getValue(), actionCombo.value, actionComment.getValue())) {
       if (fp.reviewChanged()) {
