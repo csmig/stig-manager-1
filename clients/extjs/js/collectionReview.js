@@ -1520,9 +1520,9 @@ async function addCollectionReview ( params ) {
 			try {
 				activeTab = Ext.getCmp('resources-tab-panel' + idAppend).getActiveTab()
 				activeTab.getEl().mask('Loading...')
-				const metadataGrid = Ext.getCmp('metadataGrid' + idAppend)
-				metadataGrid.curReview.assetId = record.data.assetId
-				metadataGrid.curReview.ruleId = record.data.ruleId
+				const attachmentsGrid = Ext.getCmp('attachmentsGrid' + idAppend)
+				attachmentsGrid.assetId = record.data.assetId
+				attachmentsGrid.ruleId = record.data.ruleId
 				
 				let result = await Ext.Ajax.requestPromise({
 					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
@@ -1555,8 +1555,8 @@ async function addCollectionReview ( params ) {
 					rejectFp.getForm().setValues(apiReview)
 					setRejectButtonState()
 	
-					// Metadata
-					metadataGrid.setValue(apiReview.metadata)	
+					// Attachments
+				attachmentsGrid.loadArtifacts()	
 				}
 			}
 			catch (e) {
@@ -1614,6 +1614,19 @@ async function addCollectionReview ( params ) {
 	/******************************************************/
 	// END Resources Panel/Metadata
 	/******************************************************/
+
+	  /******************************************************/
+  // START Attachments Panel
+  /******************************************************/
+  const attachmentsGrid = new SM.Attachments.Grid({
+    id: 'attachmentsGrid' + idAppend,
+    title: 'Attachments',
+    collectionId: leaf.collectionId
+  })
+  /******************************************************/
+  // END Attachments Panel
+  /******************************************************/
+
 	/******************************************************/
 	// START Resources Panel/Feedback
 	/******************************************************/
@@ -1783,11 +1796,18 @@ async function addCollectionReview ( params ) {
 							items: rejectFormPanel
 						},
 						{
-							title: 'Metadata',
-							id: 'metadata-panel' + idAppend,
+							title: 'Attachments',
+							id: 'attachment-panel' + idAppend,
 							layout: 'fit',
-							items: metadataGrid
-						},{
+							items: attachmentsGrid
+						},
+						// {
+						// 	title: 'Metadata',
+						// 	id: 'metadata-panel' + idAppend,
+						// 	layout: 'fit',
+						// 	items: metadataGrid
+						// },
+						{
 							title: 'Log',
 							layout: 'fit',
 							id: 'history-tab' + idAppend,
