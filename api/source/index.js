@@ -144,19 +144,20 @@ const STIGMAN = {
         tag: "${config.commit.tag}",
         describe: "${config.commit.describe}"
     },
-    refreshToken: {
-      enabled: ${config.oauth.refreshToken.enabled}
-    },
     oauth: {
         authority:  "${config.client.authority}",
-        clientId: "${config.client.clientId}"
+        clientId: "${config.client.clientId}",
+        refreshToken: {
+          enabled: ${config.oauth.refreshToken.enabled}
+        },
+        extraScopes: ${config.client.extraScopes}
         claims: {
           scope: "${config.oauth.claims.scope}",
           scopeFormat: "${config.oauth.claims.scopeFormat}",
           username: "${config.oauth.claims.username}",
           servicename: "${config.oauth.claims.servicename}",
           name: "${config.oauth.claims.name}",
-          roles: "${config.oauth.claims.roles}",
+          privileges: "${config.oauth.claims.privileges}",
           email: "${config.oauth.claims.email}"
         }
     }

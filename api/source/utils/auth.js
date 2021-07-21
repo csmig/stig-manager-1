@@ -11,7 +11,7 @@ const User = require(`../service/${config.database.type}/UserService`)
 var jwksUri
 var client
 
-const roleGetter = new Function("obj", "return obj?." + config.oauth.claims.roles + " || [];");
+const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privileges + " || [];");
 
 const verifyRequest = async function (req, securityDefinition, requiredScopes, cb) {
     try {
@@ -48,9 +48,9 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
         else {      
             // Get privileges      
             const privileges = {}
-            privileges.globalAccess = roleGetter(decoded).includes('global_access')
-            privileges.canCreateCollection = roleGetter(decoded).includes('create_collection')
-            privileges.canAdmin = roleGetter(decoded).includes('admin')
+            privileges.globalAccess = privilegeGetter(decoded).includes('global_access')
+            privileges.canCreateCollection = privilegeGetter(decoded).includes('create_collection')
+            privileges.canAdmin = privilegeGetter(decoded).includes('admin')
 
             req.userObject.privileges = privileges
             const response = await User.getUserByUsername(req.userObject.username, ['collectionGrants', 'statistics'], false, null)   

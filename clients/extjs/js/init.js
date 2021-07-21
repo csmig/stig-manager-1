@@ -38,7 +38,7 @@ async function authorizeOidc() {
             checkLoginIframe: false,
             pkceMethod: 'S256',
             defaultLoginOptions: {
-                scope: "offline_access stig-manager:stig stig-manager:stig:read stig-manager:collection stig-manager:user stig-manager:user:read stig-manager:op"
+                scope: "stig-manager:stig stig-manager:stig:read stig-manager:collection stig-manager:user stig-manager:user:read stig-manager:op"
                 // ,prompt: "login"
             },
             enableLogging: true

@@ -17,7 +17,8 @@ let config = {
         authority: process.env.STIGMAN_CLIENT_AUTHORITY || process.env.STIGMAN_OAUTH_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
         apiBase: process.env.STIGMAN_CLIENT_API_BASE || "/api",
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
-        directory: process.env.STIGMAN_CLIENT_DIRECTORY || "./client"
+        directory: process.env.STIGMAN_CLIENT_DIRECTORY || "./client",
+        extraScopes: process.env.STIGMAN_CLIENT_EXTRA_SCOPES
     },
     http: {
         address: process.env.STIGMAN_API_ADDRESS || "0.0.0.0",
@@ -58,11 +59,11 @@ let config = {
         },
         claims: {
             scope: process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope",
-            scopeFormat: process.env.STIGMAN_JWT_SCOPE_FORMAT || "ssv",
+            scopeFormat: process.env.STIGMAN_JWT_SCOPE_FORMAT || "rfc",
             username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM || "clientId",
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
-            roles: formatChain(process.env.STIGMAN_JWT_ROLES_CLAIM || "realm_access.roles"),
+            privileges: formatChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || process.env.STIGMAN_JWT_ROLES_CLAIM || "realm_access.roles"),
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email"
         }
     }

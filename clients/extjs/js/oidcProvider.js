@@ -70,7 +70,7 @@
     function logPromiseDeprecation() {
         if (!loggedPromiseDeprecation) {
             loggedPromiseDeprecation = true;
-            console.warn('[KEYCLOAK] Usage of legacy style promise methods such as `.error()` and `.success()` has been deprecated and support will be removed in future versions. Use standard style promise methods such as `.then() and `.catch()` instead.');
+            console.warn('[OIDCPROVIDER] Usage of legacy style promise methods such as `.error()` and `.success()` has been deprecated and support will be removed in future versions. Use standard style promise methods such as `.then() and `.catch()` instead.');
         }
     }
 
@@ -622,7 +622,7 @@
             }
 
             if (kc.timeSkew == null) {
-                logInfo('[KEYCLOAK] Unable to determine if token is expired as timeskew is not set');
+                logInfo('[OIDCPROVIDER] Unable to determine if token is expired as timeskew is not set');
                 return true;
             }
 
@@ -650,10 +650,10 @@
                 var refreshToken = false;
                 if (minValidity == -1) {
                     refreshToken = true;
-                    logInfo('[KEYCLOAK] Refreshing token: forced refresh');
+                    logInfo('[OIDCPROVIDER] Refreshing token: forced refresh');
                 } else if (!kc.tokenParsed || kc.isTokenExpired(minValidity)) {
                     refreshToken = true;
-                    logInfo('[KEYCLOAK] Refreshing token: token expired');
+                    logInfo('[OIDCPROVIDER] Refreshing token: token expired');
                 }
 
                 if (!refreshToken) {
@@ -677,7 +677,7 @@
                         req.onreadystatechange = function () {
                             if (req.readyState == 4) {
                                 if (req.status == 200) {
-                                    logInfo('[KEYCLOAK] Token refreshed');
+                                    logInfo('[OIDCPROVIDER] Token refreshed');
 
                                     timeLocal = (timeLocal + new Date().getTime()) / 2;
 
@@ -690,7 +690,7 @@
                                         p.setSuccess(true);
                                     }
                                 } else {
-                                    logWarn('[KEYCLOAK] Failed to refresh token');
+                                    logWarn('[OIDCPROVIDER] Failed to refresh token');
 
                                     if (req.status == 400) {
                                         kc.clearToken();
@@ -816,11 +816,8 @@
 
                 setToken(accessToken, refreshToken, idToken, timeLocal);
 
-                if (useNonce && ((kc.tokenParsed && kc.tokenParsed.nonce != oauth.storedNonce) ||
-                    (kc.refreshTokenParsed && kc.refreshTokenParsed.nonce != oauth.storedNonce) ||
-                    (kc.idTokenParsed && kc.idTokenParsed.nonce != oauth.storedNonce))) {
-
-                    logInfo('[KEYCLOAK] Invalid nonce, clearing token');
+                if (useNonce && (kc.idTokenParsed && kc.idTokenParsed.nonce != oauth.storedNonce)) {
+                    logInfo('[OIDCPROVIDER] Invalid nonce, clearing token');
                     kc.clearToken();
                     promise && promise.setError();
                 } else {
@@ -1004,8 +1001,12 @@
 
             if (refreshToken) {
                 kc.refreshToken = refreshToken;
-                // kc.refreshTokenParsed = decodeToken(refreshToken);
-                kc.refreshTokenParsed = {};
+                try {
+                    kc.refreshTokenParsed = decodeToken(refreshToken);
+                }
+                catch (e) {
+                    kc.refreshTokenParsed = {};
+                }
             } else {
                 delete kc.refreshToken;
                 delete kc.refreshTokenParsed;
@@ -1033,11 +1034,11 @@
                 }
 
                 if (kc.timeSkew != null) {
-                    logInfo('[KEYCLOAK] Estimated time difference between browser and server is ' + kc.timeSkew + ' seconds');
+                    logInfo('[OIDCPROVIDER] Estimated time difference between browser and server is ' + kc.timeSkew + ' seconds');
 
                     if (kc.onTokenExpired) {
                         var expiresIn = (kc.tokenParsed['exp'] - (new Date().getTime() / 1000) + kc.timeSkew) * 1000;
-                        logInfo('[KEYCLOAK] Token expires in ' + Math.round(expiresIn / 1000) + ' s');
+                        logInfo('[OIDCPROVIDER] Token expires in ' + Math.round(expiresIn / 1000) + ' s');
                         if (expiresIn <= 0) {
                             kc.onTokenExpired();
                         } else {
@@ -1322,7 +1323,7 @@
                         if (kc.silentCheckSsoFallback) {
                             kc.silentCheckSsoRedirectUri = false;
                         }
-                        logWarn("[KEYCLOAK] 3rd party cookies aren't supported by this browser. checkLoginIframe and " +
+                        logWarn("[OIDCPROVIDER] 3rd party cookies aren't supported by this browser. checkLoginIframe and " +
                             "silent check-sso are not available.")
                     }
 
