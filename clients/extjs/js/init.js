@@ -41,7 +41,7 @@ async function authorizeOidc() {
             "stig-manager:op"
         ]
         if (STIGMAN.Env.oauth.extraScopes) {
-            scopes.push(STIGMAN.Env.oauth.extraScopes.split(" "))
+            scopes.push(...STIGMAN.Env.oauth.extraScopes.split(" "))
         }
         window.oidcProvider = oidcProvider
         let response = await oidcProvider.init({ 

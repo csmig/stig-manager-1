@@ -149,7 +149,7 @@ const STIGMAN = {
         authority:  "${config.client.authority}",
         clientId: "${config.client.clientId}",
         refreshToken: {
-          enabled: ${config.oauth.refreshToken.enabled}
+          disabled: ${config.oauth.refreshToken.disabled}
         },
         extraScopes: "${config.client.extraScopes}",
         claims: {
