@@ -640,7 +640,7 @@
             var promise = createPromise();
 
             if (!kc.refreshToken) {
-                promise.setError();
+                promise.setError('No refresh token');
                 return promise.promise;
             }
 

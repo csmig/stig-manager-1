@@ -2,7 +2,7 @@ async function authorizeOidc() {
     let oidcProvider = OidcProvider({
         oidcProvider: STIGMAN.Env.oauth.authority,
         clientId: STIGMAN.Env.oauth.clientId, //'0oa15s1xbhJtGfytI5d7'
-        refreshEnabled: STIGMAN.Env.oauth.refreshToken.enabled
+        refreshDisabled: STIGMAN.Env.oauth.refreshToken.disabled
     });
     oidcProvider.refreshExpWarnCallback = function (expTs) {
        oidcProvider.onRefreshExpWarn && oidcProvider.onRefreshExpWarn(expTs)
@@ -32,14 +32,24 @@ async function authorizeOidc() {
     }
     
     try {
+        let scopes = [
+            "stig-manager:stig",
+            "stig-manager:stig:read",
+            "stig-manager:collection",
+            "stig-manager:user",
+            "stig-manager:user:read",
+            "stig-manager:op"
+        ]
+        if (STIGMAN.Env.oauth.extraScopes) {
+            scopes.push(STIGMAN.Env.oauth.extraScopes.split(" "))
+        }
         window.oidcProvider = oidcProvider
         let response = await oidcProvider.init({ 
             onLoad: 'login-required',
             checkLoginIframe: false,
             pkceMethod: 'S256',
             defaultLoginOptions: {
-                scope: "stig-manager:stig stig-manager:stig:read stig-manager:collection stig-manager:user stig-manager:user:read stig-manager:op"
-                // ,prompt: "login"
+                scope: scopes.join(" ")
             },
             enableLogging: true
         })
@@ -78,7 +88,6 @@ function loadScripts() {
         'js/SM/Classification.js',
         'js/SM/MainPanel.js',
         'js/SM/EventDispatcher.js',
-        "js/Env.js",
         "js/FileUploadField.js",
         "js/overrides.js",
         "js/RowEditor.js",

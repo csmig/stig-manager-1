@@ -14,7 +14,7 @@ let config = {
     },
     client: {
         clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",
-        authority: process.env.STIGMAN_CLIENT_AUTHORITY || process.env.STIGMAN_OAUTH_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
+        authority: process.env.STIGMAN_CLIENT_AUTHORITY || process.env.STIGMAN_OAUTH_AUTHORITY,
         apiBase: process.env.STIGMAN_CLIENT_API_BASE || "/api",
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
         directory: process.env.STIGMAN_CLIENT_DIRECTORY || "./client",
@@ -55,7 +55,7 @@ let config = {
     oauth: {
         authority: process.env.STIGMAN_OAUTH_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
         refreshToken: {
-            enabled: process.env.STIGMAN_OAUTH_ENABLE_REFRESH === "true",
+            disabled: process.env.STIGMAN_OAUTH_REFRESH_DISABLED ? process.env.STIGMAN_OAUTH_REFRESH_DISABLED === "true" : false,
         },
         claims: {
             scope: process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope",

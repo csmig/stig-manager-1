@@ -211,8 +211,8 @@ Ext.lib.Ajax = function() {
     
                 handleReadyState(o, callback);
                 o.conn.send(postData || null);   
-            }).catch(function() {
-                console.info("In Ext.lib.Ajax.asyncRequest - updateToken() error")
+            }).catch(function(e) {
+                console.info(`In Ext.lib.Ajax.asyncRequest - updateToken() error: ${e}`)
                 pub.abort(o, callback, false);
             })
         }

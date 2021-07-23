@@ -151,7 +151,7 @@ const STIGMAN = {
         refreshToken: {
           enabled: ${config.oauth.refreshToken.enabled}
         },
-        extraScopes: ${config.client.extraScopes}
+        extraScopes: "${config.client.extraScopes}",
         claims: {
           scope: "${config.oauth.claims.scope}",
           scopeFormat: "${config.oauth.claims.scopeFormat}",
