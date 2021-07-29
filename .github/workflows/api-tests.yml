@@ -47,7 +47,7 @@ jobs:
           docker run -d --name stig-manager-api \
           --net=host \
           -e STIGMAN_API_PORT=64001 \
-          -e STIGMAN_DB_HOST=localhost \
+          -e STIGMAN_DB_HOST=127.0.0.1 \
           -e STIGMAN_DB_PORT=3306 \
           -e STIGMAN_DB_PASSWORD=stigman \
           -e STIGMAN_API_AUTHORITY=http://localhost:8080/auth/realms/stigman \
