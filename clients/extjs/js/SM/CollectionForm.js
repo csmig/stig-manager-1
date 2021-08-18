@@ -614,10 +614,15 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
                             margins: '0 10 0 0',
                             width: 200,
                             value: 'emass'
-                        },{
-                            xtype: 'sm-metadata-grid',
-                            fieldLabel: 'Metadata',
-                            name: 'metadata',
+                        },
+                        // {
+                        //     xtype: 'sm-metadata-grid',
+                        //     fieldLabel: 'Metadata',
+                        //     name: 'metadata',
+                        //     anchor: '100%'
+                        // },
+                        {
+                            xtype: 'sm-collection-settings-review-fields',
                             anchor: '100%'
                         }
                     ]
@@ -774,6 +779,7 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             }
 
         })
+        let settingsReviewFields = new SM.CollectionSettings.ReviewFields()
         let firstItem = nameField
         if (this.allowDelete) {
             nameField.flex = 1
@@ -813,7 +819,8 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             items: [
                 firstItem,
                 workflowCombo,
-                metadataGrid
+                // metadataGrid,
+                settingsReviewFields
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -822,3 +829,223 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
 })
 
 Ext.reg('sm-collection-panel', SM.CollectionPanel);
+
+Ext.ns('SM.CollectionSettings')
+
+SM.CollectionSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function() {
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false      
+        }
+        let me = this
+        let data = [
+            ['always', 'Always'],
+            ['fails','Findings only']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value','display']
+        })
+        this.store.on('load',function(store){
+            me.setValue(store.getAt(0).get('value'))
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.CollectionSettings.FieldActiveComboBox.superclass.initComponent.call(this)
+
+        this.store.loadData(data)
+    }
+})
+Ext.reg('sm-field-active-combo', SM.CollectionSettings.FieldActiveComboBox)
+
+SM.CollectionSettings.FieldRequiredComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function() {
+        let _this = this
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false      
+        }
+        let me = this
+        let dataAlways = [
+            ['always', 'Always'],
+            ['fails','Findings only'],
+            ['optional', 'Optional']
+        ]
+        let dataFails = [
+            ['fails','Findings only'],
+            ['optional', 'Optional']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value','display']
+        })
+        this.store.on('load',function(store){
+            me.setValue(store.getAt(0).get('value'))
+        })
+
+        this.setListByEnabledValue = function (enabledValue) {
+            const currentValue = _this.value || 'always'
+            if (enabledValue === 'fails') {
+                _this.store.loadData(dataFails)
+                if (currentValue === 'always') {
+                    _this.setValue('fails')
+                }
+                else {
+                    _this.setValue(currentValue)
+                }
+            }
+            else {
+                _this.store.loadData(dataAlways)
+                _this.setValue(currentValue)
+            }
+        }
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.CollectionSettings.FieldRequiredComboBox.superclass.initComponent.call(this)
+
+        this.setListByEnabledValue(this.enabledField?.value || 'always')
+
+    }
+})
+Ext.reg('sm-field-required-combo', SM.CollectionSettings.FieldRequiredComboBox)
+
+SM.CollectionSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
+    initComponent: function () {
+        const _this = this
+        const resultCommentEnabledCombo = new SM.CollectionSettings.FieldActiveComboBox({
+            name: 'resultCommentEnabled',
+            field: 'result',
+            anchor: '-10',
+            listeners: {
+                select: onSelect
+            }
+        })
+        const resultCommentRequiredCombo = new SM.CollectionSettings.FieldRequiredComboBox({
+            name: 'resultCommentRequired',
+            enabledField: resultCommentEnabledCombo,
+            field: 'result',
+            anchor: '100%',
+            listeners: {
+                select: onSelect
+            }
+        })
+        resultCommentEnabledCombo.requiredField = resultCommentRequiredCombo
+
+        const actionCommentEnabledCombo = new SM.CollectionSettings.FieldActiveComboBox({
+            name: 'actionCommentEnabled',
+            field: 'action',
+            anchor: '-10',
+            listeners: {
+                select: onSelect
+            }
+        })
+        actionCommentEnabledCombo.setValue('fails')
+
+        const actionCommentRequiredCombo = new SM.CollectionSettings.FieldRequiredComboBox({
+            name: 'actionCommentRequired',
+            enabledField: actionCommentEnabledCombo,
+            value: 'optional',
+            field: 'action',
+            anchor: '100%',
+            listeners: {
+                select: onSelect
+            }
+        })
+        actionCommentEnabledCombo.requiredField = actionCommentRequiredCombo
+
+        function onSelect (item, record, index) {
+            console.log(item)
+            if (item.name === 'resultCommentEnabled' || item.name === 'actionCommentEnabled') {
+                item.requiredField.setListByEnabledValue(item.value)
+            }
+            console.log(serialize())
+        }
+
+        function serialize () {
+            const output = {}
+            const items = [
+                resultCommentEnabledCombo,
+                resultCommentRequiredCombo,
+                actionCommentEnabledCombo,
+                actionCommentRequiredCombo
+            ]
+            for (const item of items) {
+                output[item.name] = item.value
+            }
+            return output
+        }
+
+        let config = {
+            title: _this.title || 'Review fields',
+            labelWidth: 0,
+            hideLabels: true,
+            items: [
+                {
+                    layout: 'column',
+                    baseCls: 'x-plain',
+                    items: [
+                        {
+                            columnWidth: .34,
+                            layout: 'form',
+                            hideLabels: true,
+                            border: false,
+                            items: [
+                                {
+                                    xtype: 'displayfield',
+                                    value: '<b>Field</b>'
+                                },
+                                {
+                                    xtype: 'displayfield',
+                                    value: 'Result comment',
+                                    height: 22
+                                },
+                                
+                                {
+                                    xtype: 'displayfield',
+                                    value: 'Action comment',
+                                    height: 22
+                                }
+                            ]
+                        },
+                        {
+                            columnWidth: .33,
+							border: false,
+                            hideLabels: true,
+                            layout: 'form',
+                            items: [
+                                {
+                                    xtype: 'displayfield',
+                                    value: '<b>Enabled</b>'
+                                },
+                                resultCommentEnabledCombo,
+                                actionCommentEnabledCombo
+                            ]
+                        },
+                        {
+                            columnWidth: .33,
+                            layout: 'form',
+                            hideLabels: true,
+							border: false,
+                            items: [
+                                {
+                                    xtype: 'displayfield',
+                                    value: '<b>Required</b>'
+                                },
+                                resultCommentRequiredCombo,
+                                actionCommentRequiredCombo,
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.CollectionSettings.ReviewFields.superclass.initComponent.call(this);
+    }
+})
+Ext.reg('sm-collection-settings-review-fields', SM.CollectionSettings.ReviewFields)
