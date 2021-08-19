@@ -8,8 +8,19 @@ async function addCollectionManager( params ) {
 		}
 	
 		let collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collectionId )
+
+		let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
+			params: {
+				projection: 'grants'
+			},
+			method: 'GET'
+		})
+		let apiCollection = JSON.parse(result.response.responseText)
+	
 		let collectionPanel = new SM.CollectionPanel({
 			collectionId: collectionId,
+			apiCollection: apiCollection,
 			title: `Collection Properties (ID ${collectionId})`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
@@ -161,17 +172,6 @@ async function addCollectionManager( params ) {
 		thisTab.updateTitle.call(thisTab)
 		thisTab.show();
 		
-		let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
-			params: {
-				elevate: curUser.privileges.canAdmin,
-				projection: 'grants'
-			},
-			method: 'GET'
-		})
-		let apiCollection = JSON.parse(result.response.responseText)
-	
-		collectionPanel.getForm().setValues(apiCollection)
 		grantGrid.getStore().loadData(apiCollection.grants.map( g => ({
 			userId: g.user.userId,
 			username: g.user.username,
