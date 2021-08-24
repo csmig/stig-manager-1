@@ -797,7 +797,7 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
 
         })
         let settingsReviewFields = new SM.CollectionSettings.ReviewFields({
-            collectionSettings: JSON.parse(me.apiCollection?.metadata?.neoSettings)
+            collectionSettings: JSON.parse(me.apiCollection?.metadata?.neoSettings ?? null)
         })
         let firstItem = nameField
         if (this.allowDelete) {
