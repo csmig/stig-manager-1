@@ -20,7 +20,7 @@ SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
             fields: ['value','display']
         })
         this.store.on('load',function(store){
-            me.setValue(store.getAt(0).get('value'))
+            me.setValue(me.value) 
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -762,27 +762,22 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             margins: '0 10 0 0',
             width: 200,
             listeners: {
-                beforeselect: async (combo, record, index) => {
+                select: async (combo, record, index) => {
                     try {
-                        if (combo.getValue() !== record.data.value) {
-                            // value has changed
-                            let result = await Ext.Ajax.requestPromise({
-                                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
-                                method: 'PATCH',
-                                jsonData: {
-                                    workflow: record.data.value
-                                }
-                            })
-                            SM.Dispatcher.fireEvent('collectionchanged', {
-                                collectionId: me.collectionId,
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
+                            method: 'PATCH',
+                            jsonData: {
                                 workflow: record.data.value
-                            })
-                        }
-                        return true
+                            }
+                        })
+                        SM.Dispatcher.fireEvent('collectionchanged', {
+                            collectionId: me.collectionId,
+                            workflow: record.data.value
+                        })
                     }
                     catch (e) {
                         alert ("Workflow update failed")
-                        return false
                     }
                 }
             }            
