@@ -669,6 +669,22 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
 // SM.CollectionPanel = Ext.extend(Ext.Panel, {
     initComponent: function() {
         let me = this
+        async function putMetadataValue (key, value) {
+            const result = await Ext.Ajax.requestPromise({
+              url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/metadata/keys/${key}`,
+              method: 'PUT',
+              jsonData: JSON.stringify(value)
+            })
+            return result.response.responseText ? JSON.parse(result.response.responseText) : ""
+        }
+        async function getMetadataValue (key) {
+            const result = await Ext.Ajax.requestPromise({
+              url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/metadata/keys/${key}`,
+              method: 'GET'
+            })
+            return result.response.responseText ? JSON.parse(result.response.responseText) : null
+        }
+
         let nameField = new Ext.form.TextField({
             fieldLabel: 'Name',
             value: me.apiCollection?.name,
@@ -797,8 +813,24 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
 
         })
         let settingsReviewFields = new SM.CollectionSettings.ReviewFields({
-            collectionSettings: JSON.parse(me.apiCollection?.metadata?.neoSettings ?? null)
+            collectionSettings: JSON.parse(me.apiCollection?.metadata?.neoSettings ?? null),
+            onFieldSelect: async function (fieldset) {
+                try {
+                    await putMetadataValue('neoSettings', JSON.stringify(fieldset.serialize()))
+                }
+                catch (e) {
+                    alert(e.message)
+                    try {
+                        const apiSettings = await getMetadataValue('neoSettings')
+                        fieldset.setValues(JSON.parse(apiSettings))
+                    }
+                    catch (e) {
+                        alert(e.message)
+                    }
+                }
+            }
         })
+      
         let firstItem = nameField
         if (this.allowDelete) {
             nameField.flex = 1
@@ -996,12 +1028,18 @@ SM.CollectionSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
             return output
         }
 
+        _this.setValues = function (values) {
+            resultCommentEnabledCombo.setValue(values.resultCommentEnabled)
+            resultCommentRequiredCombo.setValue(values.resultCommentRequired)
+            actionCommentEnabledCombo.setValue(values.actionCommentEnabled)
+            actionCommentRequiredCombo.setValue(values.actionCommentRequired)
+        }
+
         function onSelect (item, record, index) {
-            console.log(item)
             if (item.name === 'resultCommentEnabled' || item.name === 'actionCommentEnabled') {
                 item.requiredField.setListByEnabledValue(item.value)
             }
-            console.log(_this.serialize())
+            _this.onFieldSelect && _this.onFieldSelect(_this, item, record, index)
         }
 
         let config = {
