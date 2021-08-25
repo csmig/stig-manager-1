@@ -108,6 +108,7 @@ function loadScripts() {
         "js/SM/Attachments.js",
         "js/SM/Exports.js",
         "js/SM/Parsers.js",
+        "js/SM/Review.js",
         "js/SM/ReviewsImport.js",
         "js/SM/TransferAssets.js",
         "js/collectionManager.js",

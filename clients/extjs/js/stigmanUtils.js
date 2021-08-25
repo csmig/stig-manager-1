@@ -1055,130 +1055,131 @@ function encodeStoreDone(store,field){
 	return Ext.util.JSON.encode(myArray);
 }
 
-async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
-	try {
-		// CONTENT
-		let contentPanel = Ext.getCmp('content-panel' + idAppend)
-		let contentReq = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
-			method: 'GET',
-			params: {
-				projection: ['detail','ccis','checks','fixes']
-			}
-		})
-		let content = JSON.parse(contentReq.response.responseText)
-		contentPanel.update(content)
-		contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId)
+// async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
+// 	try {
+// 		// return
+// 		// CONTENT
+// 		let contentPanel = Ext.getCmp('content-panel' + idAppend)
+// 		let contentReq = await Ext.Ajax.requestPromise({
+// 			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
+// 			method: 'GET',
+// 			params: {
+// 				projection: ['detail','ccis','checks','fixes']
+// 			}
+// 		})
+// 		let content = JSON.parse(contentReq.response.responseText)
+// 		contentPanel.update(content)
+// 		contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId)
 
-		// REVIEW
-		let reviewsReq = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
-			method: 'GET',
-			params: {
-				rules: 'all',
-				ruleId: groupGridRecord.data.ruleId
-			}
-		})
-		let reviews = Ext.util.JSON.decode(reviewsReq.response.responseText)
-		let review = reviews.filter(review => review.assetId == assetId)[0] || {}
-		let otherReviews = reviews.filter(review => review.assetId != assetId)
+// 		// REVIEW
+// 		let reviewsReq = await Ext.Ajax.requestPromise({
+// 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
+// 			method: 'GET',
+// 			params: {
+// 				rules: 'all',
+// 				ruleId: groupGridRecord.data.ruleId
+// 			}
+// 		})
+// 		let reviews = Ext.util.JSON.decode(reviewsReq.response.responseText)
+// 		let review = reviews.filter(review => review.assetId == assetId)[0] || {}
+// 		let otherReviews = reviews.filter(review => review.assetId != assetId)
 
-		// load review
-		let reviewForm = Ext.getCmp('reviewForm' + idAppend)
-		let form = reviewForm.getForm()
-		form.reset();
-		reviewForm.isLoaded = false
+// 		// load review
+// 		let reviewForm = Ext.getCmp('reviewForm' + idAppend)
+// 		let form = reviewForm.getForm()
+// 		form.reset();
+// 		reviewForm.isLoaded = false
 		
-		// Set the legacy editStr property
-		if (review.ts) {
-			let extDate = new Date(review.ts)
-			review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
-		}
+// 		// Set the legacy editStr property
+// 		if (review.ts) {
+// 			let extDate = new Date(review.ts)
+// 			review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
+// 		}
 
-		// Display the review
-		form.setValues(review)
+// 		// Display the review
+// 		form.setValues(review)
 
-		reviewForm.groupGridRecord = groupGridRecord
-		reviewForm.isLoaded = true
-		let resultCombo = form.findField('result-combo' + idAppend)
-		let resultComment = form.findField('result-comment' + idAppend)
-		let actionCombo = form.findField('action-combo' + idAppend)
-		let actionComment = form.findField('action-comment' + idAppend)
+// 		reviewForm.groupGridRecord = groupGridRecord
+// 		reviewForm.isLoaded = true
+// 		let resultCombo = form.findField('result-combo' + idAppend)
+// 		let resultComment = form.findField('result-comment' + idAppend)
+// 		let actionCombo = form.findField('action-combo' + idAppend)
+// 		let actionComment = form.findField('action-comment' + idAppend)
 
-		// Initialize the lastSavedData properties
-		if ( resultCombo.value === null ) { resultCombo.value = '' }
-		resultCombo.lastSavedData = resultCombo.value
-		if (review.resultComment === null) {
-			resultComment.lastSavedData = ""
-		} else {
-			resultComment.lastSavedData = resultComment.getValue()
-		}
-		if ( actionCombo.value === null ) { actionCombo.value = '' }
-		actionCombo.lastSavedData = actionCombo.value
-		if (review.actionComment === null) {
-			actionComment.lastSavedData = ""
-		} else {
-			actionComment.lastSavedData = actionComment.getValue()
-		}
+// 		// Initialize the lastSavedData properties
+// 		if ( resultCombo.value === null ) { resultCombo.value = '' }
+// 		resultCombo.lastSavedData = resultCombo.value
+// 		if (review.resultComment === null) {
+// 			resultComment.lastSavedData = ""
+// 		} else {
+// 			resultComment.lastSavedData = resultComment.getValue()
+// 		}
+// 		if ( actionCombo.value === null ) { actionCombo.value = '' }
+// 		actionCombo.lastSavedData = actionCombo.value
+// 		if (review.actionComment === null) {
+// 			actionComment.lastSavedData = ""
+// 		} else {
+// 			actionComment.lastSavedData = actionComment.getValue()
+// 		}
 
 
-		// load others
-		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
+// 		// load others
+// 		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
 
-		// Log, Feedback and Metadata
-		const metadataGrid = Ext.getCmp('metadataGrid' + idAppend)
-		metadataGrid.curReview.ruleId = groupGridRecord.data.ruleId
+// 		// Log, Feedback and Metadata
+// 		const metadataGrid = Ext.getCmp('metadataGrid' + idAppend)
+// 		metadataGrid.curReview.ruleId = groupGridRecord.data.ruleId
 
-		let historyMetaReq = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
-			method: 'GET',
-			params: { 
-				projection: ['history', 'metadata']
-			}
-		})
-		let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
-		if (! reviewProjected) {
-			Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
-			Ext.getCmp('metadataGrid' + idAppend).getStore().removeAll()
-			Ext.getCmp('attachmentsGrid' + idAppend).getStore().removeAll()
-		}
-		if (reviewProjected.history) {
-			// append current state of review to history grid
-			let currentReview = {
-				action: reviewProjected.action,
-				actionComment: reviewProjected.actionComment,
-				autoResult: reviewProjected.autoResult,
-				rejectText: reviewProjected.rejectText,
-				result: reviewProjected.result,
-				resultComment: reviewProjected.resultComment,
-				status: reviewProjected.status,
-				ts: reviewProjected.ts,
-				userId: reviewProjected.userId,
-				username: reviewProjected.username
-			}
-			reviewProjected.history.push(currentReview)
-			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewProjected.history)
-		}
-		if (reviewProjected.metadata) {
-			metadataGrid.setValue(reviewProjected.metadata)
-		}
-		// Feedback
-		Ext.getCmp(`feedback-tab${idAppend}`).update(reviewProjected.rejectText)
+// 		let historyMetaReq = await Ext.Ajax.requestPromise({
+// 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
+// 			method: 'GET',
+// 			params: { 
+// 				projection: ['history', 'metadata']
+// 			}
+// 		})
+// 		let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
+// 		if (! reviewProjected) {
+// 			Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
+// 			Ext.getCmp('metadataGrid' + idAppend).getStore().removeAll()
+// 			Ext.getCmp('attachmentsGrid' + idAppend).getStore().removeAll()
+// 		}
+// 		if (reviewProjected.history) {
+// 			// append current state of review to history grid
+// 			let currentReview = {
+// 				action: reviewProjected.action,
+// 				actionComment: reviewProjected.actionComment,
+// 				autoResult: reviewProjected.autoResult,
+// 				rejectText: reviewProjected.rejectText,
+// 				result: reviewProjected.result,
+// 				resultComment: reviewProjected.resultComment,
+// 				status: reviewProjected.status,
+// 				ts: reviewProjected.ts,
+// 				userId: reviewProjected.userId,
+// 				username: reviewProjected.username
+// 			}
+// 			reviewProjected.history.push(currentReview)
+// 			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewProjected.history)
+// 		}
+// 		if (reviewProjected.metadata) {
+// 			metadataGrid.setValue(reviewProjected.metadata)
+// 		}
+// 		// Feedback
+// 		Ext.getCmp(`feedback-tab${idAppend}`).update(reviewProjected.rejectText)
 
-		// Attachments
-		Ext.getCmp('attachmentsGrid' + idAppend).ruleId = groupGridRecord.data.ruleId
-		Ext.getCmp('attachmentsGrid' + idAppend).loadArtifacts()
-		reviewForm.setReviewFormItemStates(reviewForm)
-	}
-	catch (e) {
-		if (e.response) {
-			alert (e.response.responseText)
-		}
-		else {
-			alert (e)
-		}
-	}	
-}	
+// 		// Attachments
+// 		Ext.getCmp('attachmentsGrid' + idAppend).ruleId = groupGridRecord.data.ruleId
+// 		Ext.getCmp('attachmentsGrid' + idAppend).loadArtifacts()
+// 		reviewForm.setReviewFormItemStates(reviewForm)
+// 	}
+// 	catch (e) {
+// 		if (e.response) {
+// 			alert (e.response.responseText)
+// 		}
+// 		else {
+// 			alert (e)
+// 		}
+// 	}	
+// }	
 
 function checked(val) {
 	if (val == 'X') {

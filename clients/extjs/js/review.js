@@ -5,6 +5,12 @@ async function addReview( params ) {
     method: 'GET'
   })
   let apiCollection = JSON.parse(result.response.responseText)
+  let apiSettings = apiCollection.metadata.neoSettings ? JSON.parse(apiCollection.metadata.neoSettings) : {
+    resultCommentEnabled: 'always',
+    resultCommentRequired: 'always',
+    actionCommentEnabled: 'findings',
+    actionCommentRequired: 'findings'
+  }
 
 
   // Classic compatability. Remove after modernization
@@ -446,11 +452,11 @@ async function addReview( params ) {
           // var actionComment = Ext.getCmp('action-comment' + idAppend);
 
           // //var isDirty = (resultCombo.lastSavedData != resultCombo.value) || (resultComment.lastSavedData != resultComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
-          var reviewForm = Ext.getCmp('reviewForm' + idAppend);
+          // var reviewForm = Ext.getCmp('reviewForm' + idAppend);
 
           if (reviewForm.groupGridRecord != record) { // perhaps the row select is the result of a view refresh
-            var isDirty = Ext.getCmp('reviewForm' + idAppend).reviewChanged();
-            var isValid = Ext.getCmp('reviewForm' + idAppend).getForm().isValid();
+            var isDirty = reviewForm.reviewChanged();
+            var isValid = reviewForm.getForm().isValid();
 
             if (isDirty && isValid && reviewForm.isLoaded) {
               Ext.Msg.show({
@@ -1196,7 +1202,7 @@ async function addReview( params ) {
     }
   })
 
-  var reviewForm = new Ext.form.FormPanel({
+  const reviewForm = new SM.Review.Form.Panel({
     cls: 'sm-round-panel',
     bodyCssClass: 'sm-review-form',
     border: false,
@@ -1209,423 +1215,569 @@ async function addReview( params ) {
     title: 'Review on ' + leaf.assetName,
     padding: 10,
     labelWidth: 54,
-    isLoaded: false, // STIG Manager defined property
-    groupGridRecord: {}, // STIG Manager defined property
-    monitorValid: false,
-    trackResetOnLoad: false,
-    reviewChanged: function () { // STIG Manager defined property
-      var resultCombo = Ext.getCmp('result-combo' + idAppend);
-      var resultComment = Ext.getCmp('result-comment' + idAppend);
-      var actionCombo = Ext.getCmp('action-combo' + idAppend);
-      var actionComment = Ext.getCmp('action-comment' + idAppend);
-      return (resultCombo.lastSavedData != resultCombo.value) || (resultComment.lastSavedData != resultComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
-    },
-    items: [{
-      xtype: 'fieldset',
-      anchor: '100%, 49%',
-      title: 'Evaluation',
-      items: [{
-        xtype: 'combo',
-        cls: 'sm-review-combo-input',
-        triggerClass: 'sm-review-trigger',
-        disabledClass: 'sm-review-item-disabled',
-        width: 100,
-        lastSavedData: "",
-        id: 'result-combo' + idAppend,
-        changed: false,
-        fieldLabel: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
-        labelSeparator: '',
-        emptyText: 'Your result...',
-        disabled: true,
-        name: 'result',
-        hiddenName: 'result',
-        mode: 'local',
-        editable: false,
-        store: new Ext.data.SimpleStore({
-          fields: ['result', 'resultStr'],
-          data: [['pass', 'Not a Finding'], ['notapplicable', 'Not Applicable'], ['fail', 'Open']]
-        }),
-        valueField: 'result',
-        displayField: 'resultStr',
-        listeners: {
-          'select': function (combo, record, index) {
-            if (record.data.result == 'fail') { // Open
-              Ext.getCmp('action-combo' + idAppend).enable();
-              Ext.getCmp('action-comment' + idAppend).enable();
-            } else {
-              Ext.getCmp('action-combo' + idAppend).disable();
-              Ext.getCmp('action-comment' + idAppend).disable();
-            }
-            reviewForm.setReviewFormItemStates(reviewForm)
-          },
-          'change': function (combo, newVal, oldVal) {
-            combo.changed = true;
-          },
-          'render': function (combo) {
-            new Ext.ToolTip({
-              target: combo.label.dom.getElementsByClassName('fa')[0],
-              showDelay: 0,
-              dismissDelay: 0,
-              autoWidth: true,
-              html: SM.resultTipText
-            }) 
-          }
-        },
-        triggerAction: 'all'
-      },resultCommentTextArea
-    ] // end fieldset items
-    }, {
-      xtype: 'fieldset',
-      id: 'recommendation-fs' + idAppend,
-      anchor: '100%, 49%',
-      title: 'Recommendation',
-      items: [{
-        xtype: 'combo',
-        triggerClass: 'sm-review-trigger',
-        disabledClass: 'sm-review-item-disabled',
-        cls: 'sm-review-combo-input',
-        lastSavedData: "",
-        disabled: true,
-        changed: false,
-        allowBlank: true,
-        width: 100,
-        id: 'action-combo' + idAppend,
-        fieldLabel: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>',
-        labelSeparator: '',
-        name: 'action',
-        hiddenName: 'action',
-        mode: 'local',
-        editable: false,
-        store: new Ext.data.SimpleStore({
-          fields: ['action', 'actionStr'],
-          data: [['remediate', 'Remediate'], ['mitigate', 'Mitigate'], ['exception', 'Exception']]
-        }),
-        displayField: 'actionStr',
-        valueField: 'action',
-        listeners: {
-          'select': function (combo, record, index) {
-            if (record.data.actionId == 3) {
-              Ext.getCmp('rd-checkbox' + idAppend).setValue(1);
-            }
-            reviewForm.setReviewFormItemStates(reviewForm)
-          },
-          'change': function (combo, newVal, oldVal) {
-            combo.changed = true;
-            // reviewForm.setReviewFormItemStates(reviewForm)
-          },
-          'render': function (combo) {
-            new Ext.ToolTip({
-              target: combo.label.dom.getElementsByClassName('fa')[0],
-              showDelay: 0,
-              dismissDelay: 0,
-              autoWidth: true,
-              html: SM.actionTipText
-            }) 
-          }
-        },
-        triggerAction: 'all'
-      },actionCommentTextArea] // end fieldset items
-    }, {
-      xtype: 'displayfield',
-      anchor: '100% 2%',
-      id: 'editor' + idAppend,
-      fieldLabel: 'Modified',
-      allowBlank: true,
-      name: 'editStr',
-      readOnly: true
+    btnHandler: function (btn) {
+      console.log(btn)
     }
-      , {
-      xtype: 'hidden',
-      name: 'autoResult',
-      id: 'autoResult' + idAppend
-    }, {
-      xtype: 'hidden',
-      name: 'locked',
-      id: 'locked' + idAppend
-    }], // end form panel items,
-    footerCssClass: 'sm-review-footer',
-    buttons: [
-      {
-        text: 'Loading...',
-        disabled: true,
-        id: 'reviewForm-button-1' + idAppend,
-        // formBind: true,
-        handler: function (btn) {
-          saveReview({
-            source: 'form',
-            type: btn.actionType
-          });
+  })
+
+  async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
+    try {
+      // return
+      // CONTENT
+      let contentPanel = Ext.getCmp('content-panel' + idAppend)
+      let contentReq = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
+        method: 'GET',
+        params: {
+          projection: ['detail','ccis','checks','fixes']
         }
-      }, {
-        text: 'Loading...',
-        disabled: true,
-        iconCls: 'sm-ready-icon',
-        id: 'reviewForm-button-2' + idAppend,
-        // formBind: true,
-        handler: function (btn) {
-          saveReview({
-            source: 'form',
-            type: btn.actionType
-          });
+      })
+      let content = JSON.parse(contentReq.response.responseText)
+      contentPanel.update(content)
+      contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId)
+  
+      // REVIEW
+      let reviewsReq = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
+        method: 'GET',
+        params: {
+          rules: 'all',
+          ruleId: groupGridRecord.data.ruleId
         }
-      }], // end buttons
-    listeners: {
-      render: function (formPanel) {
-        this.getForm().waitMsgTarget = this.getEl();
-        var reviewFormPanelDropTargetEl = formPanel.body.dom;
-        var reviewFormPanelDropTarget = new Ext.dd.DropTarget(reviewFormPanelDropTargetEl, {
-          ddGroup: 'gridDDGroup',
-          notifyEnter: function (ddSource, e, data) {
-            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
-            var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
-            if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
-              // // Add some flare to invite drop.
-              // reviewForm.body.stopFx();
-              // reviewForm.body.highlight("00ff00", {
-              //   attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
-              //   endColor: "f0f0f0",
-              //   easing: 'backBoth',
-              //   duration: 0.5
-              // });
-            } else {
-              return (reviewFormPanelDropTarget.dropNotAllowed);
-            }
-          },
-          notifyOver: function (ddSource, e, data) {
-            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
-            var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
-            if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
-              return (reviewFormPanelDropTarget.dropAllowed);
-            } else {
-              return (reviewFormPanelDropTarget.dropNotAllowed);
-            }
-          },
-          notifyDrop: function (ddSource, e, data) {
-            // var editableDest = true
-            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
-            var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
-            if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
-              // Reference the record (single selection) for readability
-              //var selectedRecord = ddSource.dragData.selections[0];
-              var selectedRecord = data.selections[0];
-              // Load the record into the form
-              var sCombo = Ext.getCmp('result-combo' + idAppend);
-              var sComment = Ext.getCmp('result-comment' + idAppend);
-              var aCombo = Ext.getCmp('action-combo' + idAppend);
-              var aComment = Ext.getCmp('action-comment' + idAppend);
-              if (!sCombo.disabled && selectedRecord.data.autoResult == false) {
-                sCombo.setValue(selectedRecord.data.result);
-              }
-              //if (!sComment.disabled && selectedRecord.data.autoResult == 0) {
-              sComment.setValue(selectedRecord.data.resultComment);
-              //}
-              if (sCombo.getValue() === 'fail') {
-                aCombo.enable();
-                aComment.enable();
-              } else {
-                aCombo.disable();
-                aComment.disable();
-              }
-              if (!aCombo.disabled) {
-                aCombo.setValue(selectedRecord.data.action);
-              }
-              if (!aComment.disabled) {
-                aComment.setValue(selectedRecord.data.actionComment);
-              }
-              // reviewForm.body.stopFx();
-              // reviewForm.body.highlight("eeeeee", {
-              //   attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
-              //   endColor: "FFFFFF",
-              //   easing: 'easeIn',
-              //   duration: 1
-              // })
-              reviewForm.setReviewFormItemStates(reviewForm)
-
-            }
-            return (true);
-
-          }
-        }); // end DropTarget
-      }, // end render
-      // clientvalidation: setReviewFormItemStates
-    } // end listeners
-  });
-
-  reviewForm.setReviewFormItemStates = function (fp, valid) {
-    var resultCombo = Ext.getCmp('result-combo' + idAppend);
-    var resultComment = Ext.getCmp('result-comment' + idAppend);
-    var actionCombo = Ext.getCmp('action-combo' + idAppend);
-    var actionComment = Ext.getCmp('action-comment' + idAppend);
-    var button1 = Ext.getCmp('reviewForm-button-1' + idAppend); // left button
-    var button2 = Ext.getCmp('reviewForm-button-2' + idAppend); // right button
-    var attachButton = Ext.getCmp('attachmentsGrid' + idAppend).fileUploadField; // 'add attachment' button
-    var autoResultField = Ext.getCmp('autoResult' + idAppend); // hidden 'autoResult' field
-
-    // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
-    var editable = (fp.groupGridRecord.data.status === '' || fp.groupGridRecord.data.status === 'saved' || fp.groupGridRecord.data.status === 'rejected');
-    resultCombo.setDisabled(!editable); // disable if not editable
-    resultComment.setDisabled(!editable);
-    actionCombo.setDisabled(!editable);
-    actionComment.setDisabled(!editable);
-
-    if (autoResultField.value == true && resultCombo.value === 'notapplicable') {
-      autoResultField.value = false;
-    }
-
-    if (autoResultField.value == true) { // Disable editing for autoResult
-      resultCombo.disable();
-      resultComment.disable();
-    }
-
-    if (editable) {
-      if (resultCombo.value === 'fail') { // Result is 'Open'
-        actionCombo.enable();
-        actionComment.enable();
-      } else {
-        actionCombo.disable();
-        actionComment.disable();
+      })
+      let reviews = Ext.util.JSON.decode(reviewsReq.response.responseText)
+      let review = reviews.filter(review => review.assetId == assetId)[0] || {}
+      let otherReviews = reviews.filter(review => review.assetId != assetId)
+  
+      // load review
+      // let reviewForm = Ext.getCmp('reviewForm' + idAppend)
+      let form = reviewForm.getForm()
+      form.reset();
+      reviewForm.isLoaded = false
+      
+      // Set the legacy editStr property
+      if (review.ts) {
+        let extDate = new Date(review.ts)
+        review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
       }
-      if (resultCombo.value === '' || resultCombo.value === undefined || resultCombo.value === null) {
-        resultComment.disable();
-      }
-    }
-
-    //Disable the add attachment button if the review has not been saved yet
-    if (fp.groupGridRecord.data.result == "") {
-      attachButton.disable();
-      attachButton.button.setTooltip('This button is disabled because the review has never been saved.');
-    } else {
-      attachButton.enable();
-      //attachButton.setTooltip('Attach a file to this review.'); 
-      attachButton.button.setTooltip('');
-    }
-
-    if (isReviewComplete(resultCombo.value, resultComment.getValue(), actionCombo.value, actionComment.getValue())) {
-      if (fp.reviewChanged()) {
-        // review has been changed (is dirty)
-        switch (fp.groupGridRecord.data.status) {
-          case '':
-          case 'saved':
-            // button 1
-            button1.enable();
-            button1.setText('Save without submitting');
-            button1.setIconClass('sm-database-save-icon');
-            button1.actionType = 'save';
-            button1.setTooltip('');
-            // button 2
-            button2.enable();
-            button2.setText('Save and Submit');
-            button2.actionType = 'save and submit';
-            button2.setTooltip('');
-            break;
-          case 'submitted': // 'ready' (a.k.a 'submitted'), dirty review can't happen
-            break;
-          case 'rejected': // 'rejected'
-            // button 1
-            button1.enable();
-            button1.setText('Save without submitting');
-            button1.setIconClass('sm-database-save-icon');
-            button1.actionType = 'save';
-            button1.setTooltip('');
-            // button 2
-            button2.enable();
-            button2.setText('Save and Resubmit');
-            button2.actionType = 'save and submit';
-            button2.setTooltip('');
-            break;
-          case 'accepted': // 'approved', dirty review can't happen
-            break;
+  
+      // Display the review
+      reviewForm.loadValues(review)
+  
+      reviewForm.groupGridRecord = groupGridRecord
+      reviewForm.isLoaded = true
+      // let resultCombo = form.findField('result-combo' + idAppend)
+      // let resultComment = form.findField('result-comment' + idAppend)
+      // let actionCombo = form.findField('action-combo' + idAppend)
+      // let actionComment = form.findField('action-comment' + idAppend)
+  
+      // // Initialize the lastSavedData properties
+      // if ( resultCombo.value === null ) { resultCombo.value = '' }
+      // resultCombo.lastSavedData = resultCombo.value
+      // if (review.resultComment === null) {
+      //   resultComment.lastSavedData = ""
+      // } else {
+      //   resultComment.lastSavedData = resultComment.getValue()
+      // }
+      // if ( actionCombo.value === null ) { actionCombo.value = '' }
+      // actionCombo.lastSavedData = actionCombo.value
+      // if (review.actionComment === null) {
+      //   actionComment.lastSavedData = ""
+      // } else {
+      //   actionComment.lastSavedData = actionComment.getValue()
+      // }
+  
+  
+      // load others
+      Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
+  
+      // Log, Feedback and Metadata
+      const metadataGrid = Ext.getCmp('metadataGrid' + idAppend)
+      metadataGrid.curReview.ruleId = groupGridRecord.data.ruleId
+  
+      let historyMetaReq = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
+        method: 'GET',
+        params: { 
+          projection: ['history', 'metadata']
         }
-      } else {
-        // review has not been changed (is in last saved state)
-        switch (fp.groupGridRecord.data.status) {
-          case '':
-          case 'saved': // in progress
-            // button 1
-            button1.disable();
-            button1.setText('Save without submitting');
-            button1.setIconClass('sm-database-save-icon');
-            button1.actionType = '';
-            button1.setTooltip('This button is disabled because the review has not been modified.');
-            // button 2
-            button2.enable();
-            button2.setText('Submit');
-            button2.actionType = 'submit';
-            button2.setTooltip('');
-            break;
-          case 'accepted':
-          case 'submitted': // ready
-            // button 1
-            button1.enable();
-            button1.setText('Unsubmit');
-            button1.setIconClass('sm-ready-flip-icon');
-            button1.actionType = 'unsubmit';
-            button1.setTooltip('');
-            // button 2
-            button2.disable();
-            button2.setText('Submit');
-            button2.actionType = '';
-            button2.setTooltip('This button is disabled because the review has already been submitted.');
-            // review fields
-            break;
-          case 'rejected': // rejected
-            // button 1
-            button1.disable();
-            button1.setText('Save without submitting');
-            button1.setIconClass('sm-database-save-icon');
-            button1.actionType = '';
-            button1.setTooltip('This button is disabled because the review has not been modified.');
-            // button 2
-            button2.disable();
-            button2.setText('Save and Resubmit');
-            button2.actionType = '';
-            button2.setTooltip('This button is disabled because the review has not been modified.');
-            break;
-          // case 'accepted': // approved
-          //   // we should never get here because of the earlier 'if' statement
-          //   // button 1
-          //   button1.hide();
-          //   button1.setText('Save without submitting');
-          //   button1.setIconClass('sm-database-save-icon');
-          //   button1.actionType = '';
-          //   // button 2
-          //   button2.hide();
-          //   button2.setText('Save and Submit');
-          //   button2.actionType = '';
-          //   break;
+      })
+      let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
+      if (! reviewProjected) {
+        Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
+        Ext.getCmp('metadataGrid' + idAppend).getStore().removeAll()
+        Ext.getCmp('attachmentsGrid' + idAppend).getStore().removeAll()
+      }
+      if (reviewProjected.history) {
+        // append current state of review to history grid
+        let currentReview = {
+          action: reviewProjected.action,
+          actionComment: reviewProjected.actionComment,
+          autoResult: reviewProjected.autoResult,
+          rejectText: reviewProjected.rejectText,
+          result: reviewProjected.result,
+          resultComment: reviewProjected.resultComment,
+          status: reviewProjected.status,
+          ts: reviewProjected.ts,
+          userId: reviewProjected.userId,
+          username: reviewProjected.username
         }
+        reviewProjected.history.push(currentReview)
+        Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewProjected.history)
       }
-    } else {
-      // review is incomplete
-      if (fp.reviewChanged()) {
-        // review has been changed
-        // button 1
-        button1.enable();
-        button1.setText('Save without submitting');
-        button1.setIconClass('sm-database-save-icon');
-        button1.actionType = 'save and unsubmit';
-        button1.setTooltip('');
-        // button 2
-        button2.disable();
-        button2.setText('Save and Submit');
-        button2.actionType = '';
-        button2.setTooltip('This button is disabled because the review is not complete and cannot be submitted.');
-      } else {
-        // review has not been changed (as loaded)
-        // button 1
-        button1.disable();
-        button1.setText('Save without submitting');
-        button1.setIconClass('sm-database-save-icon');
-        button1.actionType = '';
-        button1.setTooltip('This button is disabled because the review has not been modified.');
-        // button 2
-        button2.disable();
-        button2.setText('Save and Submit');
-        button2.actionType = '';
-        button2.setTooltip('This button is disabled because the review is not complete and cannot be submitted.');
+      if (reviewProjected.metadata) {
+        metadataGrid.setValue(reviewProjected.metadata)
       }
+      // Feedback
+      Ext.getCmp(`feedback-tab${idAppend}`).update(reviewProjected.rejectText)
+  
+      // Attachments
+      Ext.getCmp('attachmentsGrid' + idAppend).ruleId = groupGridRecord.data.ruleId
+      Ext.getCmp('attachmentsGrid' + idAppend).loadArtifacts()
+      reviewForm.setReviewFormItemStates(reviewForm)
     }
-  };
+    catch (e) {
+      if (e.response) {
+        alert (e.response.responseText)
+      }
+      else {
+        alert (e)
+      }
+    }	
+  }	
+  
+
+  // var reviewForm = new Ext.form.FormPanel({
+  //   cls: 'sm-round-panel',
+  //   bodyCssClass: 'sm-review-form',
+  //   border: false,
+  //   margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
+  //   region: 'south',
+  //   split: true,
+  //   height: '65%',
+  //   minHeight: 320,
+  //   id: 'reviewForm' + idAppend,
+  //   title: 'Review on ' + leaf.assetName,
+  //   padding: 10,
+  //   labelWidth: 54,
+  //   isLoaded: false, // STIG Manager defined property
+  //   groupGridRecord: {}, // STIG Manager defined property
+  //   monitorValid: false,
+  //   trackResetOnLoad: false,
+  //   reviewChanged: function () { // STIG Manager defined property
+  //     var resultCombo = Ext.getCmp('result-combo' + idAppend);
+  //     var resultComment = Ext.getCmp('result-comment' + idAppend);
+  //     var actionCombo = Ext.getCmp('action-combo' + idAppend);
+  //     var actionComment = Ext.getCmp('action-comment' + idAppend);
+  //     return (resultCombo.lastSavedData != resultCombo.value) || (resultComment.lastSavedData != resultComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
+  //   },
+  //   items: [{
+  //     xtype: 'fieldset',
+  //     anchor: '100%, 49%',
+  //     title: 'Evaluation',
+  //     items: [{
+  //       xtype: 'combo',
+  //       cls: 'sm-review-combo-input',
+  //       triggerClass: 'sm-review-trigger',
+  //       disabledClass: 'sm-review-item-disabled',
+  //       width: 100,
+  //       lastSavedData: "",
+  //       id: 'result-combo' + idAppend,
+  //       changed: false,
+  //       fieldLabel: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
+  //       labelSeparator: '',
+  //       emptyText: 'Your result...',
+  //       disabled: true,
+  //       name: 'result',
+  //       hiddenName: 'result',
+  //       mode: 'local',
+  //       editable: false,
+  //       store: new Ext.data.SimpleStore({
+  //         fields: ['result', 'resultStr'],
+  //         data: [['pass', 'Not a Finding'], ['notapplicable', 'Not Applicable'], ['fail', 'Open']]
+  //       }),
+  //       valueField: 'result',
+  //       displayField: 'resultStr',
+  //       listeners: {
+  //         'select': function (combo, record, index) {
+  //           if (record.data.result == 'fail') { // Open
+  //             Ext.getCmp('action-combo' + idAppend).enable();
+  //             Ext.getCmp('action-comment' + idAppend).enable();
+  //           } else {
+  //             Ext.getCmp('action-combo' + idAppend).disable();
+  //             Ext.getCmp('action-comment' + idAppend).disable();
+  //           }
+  //           reviewForm.setReviewFormItemStates(reviewForm)
+  //         },
+  //         'change': function (combo, newVal, oldVal) {
+  //           combo.changed = true;
+  //         },
+  //         'render': function (combo) {
+  //           new Ext.ToolTip({
+  //             target: combo.label.dom.getElementsByClassName('fa')[0],
+  //             showDelay: 0,
+  //             dismissDelay: 0,
+  //             autoWidth: true,
+  //             html: SM.resultTipText
+  //           }) 
+  //         }
+  //       },
+  //       triggerAction: 'all'
+  //     },resultCommentTextArea
+  //   ] // end fieldset items
+  //   }, {
+  //     xtype: 'fieldset',
+  //     id: 'recommendation-fs' + idAppend,
+  //     anchor: '100%, 49%',
+  //     title: 'Recommendation',
+  //     items: [{
+  //       xtype: 'combo',
+  //       triggerClass: 'sm-review-trigger',
+  //       disabledClass: 'sm-review-item-disabled',
+  //       cls: 'sm-review-combo-input',
+  //       lastSavedData: "",
+  //       disabled: true,
+  //       changed: false,
+  //       allowBlank: true,
+  //       width: 100,
+  //       id: 'action-combo' + idAppend,
+  //       fieldLabel: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>',
+  //       labelSeparator: '',
+  //       name: 'action',
+  //       hiddenName: 'action',
+  //       mode: 'local',
+  //       editable: false,
+  //       store: new Ext.data.SimpleStore({
+  //         fields: ['action', 'actionStr'],
+  //         data: [['remediate', 'Remediate'], ['mitigate', 'Mitigate'], ['exception', 'Exception']]
+  //       }),
+  //       displayField: 'actionStr',
+  //       valueField: 'action',
+  //       listeners: {
+  //         'select': function (combo, record, index) {
+  //           if (record.data.actionId == 3) {
+  //             Ext.getCmp('rd-checkbox' + idAppend).setValue(1);
+  //           }
+  //           reviewForm.setReviewFormItemStates(reviewForm)
+  //         },
+  //         'change': function (combo, newVal, oldVal) {
+  //           combo.changed = true;
+  //           // reviewForm.setReviewFormItemStates(reviewForm)
+  //         },
+  //         'render': function (combo) {
+  //           new Ext.ToolTip({
+  //             target: combo.label.dom.getElementsByClassName('fa')[0],
+  //             showDelay: 0,
+  //             dismissDelay: 0,
+  //             autoWidth: true,
+  //             html: SM.actionTipText
+  //           }) 
+  //         }
+  //       },
+  //       triggerAction: 'all'
+  //     },actionCommentTextArea] // end fieldset items
+  //   }, {
+  //     xtype: 'displayfield',
+  //     anchor: '100% 2%',
+  //     id: 'editor' + idAppend,
+  //     fieldLabel: 'Modified',
+  //     allowBlank: true,
+  //     name: 'editStr',
+  //     readOnly: true
+  //   }
+  //     , {
+  //     xtype: 'hidden',
+  //     name: 'autoResult',
+  //     id: 'autoResult' + idAppend
+  //   }, {
+  //     xtype: 'hidden',
+  //     name: 'locked',
+  //     id: 'locked' + idAppend
+  //   }], // end form panel items,
+  //   footerCssClass: 'sm-review-footer',
+  //   buttons: [
+  //     {
+  //       text: 'Loading...',
+  //       disabled: true,
+  //       id: 'reviewForm-button-1' + idAppend,
+  //       // formBind: true,
+  //       handler: function (btn) {
+  //         saveReview({
+  //           source: 'form',
+  //           type: btn.actionType
+  //         });
+  //       }
+  //     }, {
+  //       text: 'Loading...',
+  //       disabled: true,
+  //       iconCls: 'sm-ready-icon',
+  //       id: 'reviewForm-button-2' + idAppend,
+  //       // formBind: true,
+  //       handler: function (btn) {
+  //         saveReview({
+  //           source: 'form',
+  //           type: btn.actionType
+  //         });
+  //       }
+  //     }], // end buttons
+  //   listeners: {
+  //     render: function (formPanel) {
+  //       this.getForm().waitMsgTarget = this.getEl();
+  //       var reviewFormPanelDropTargetEl = formPanel.body.dom;
+  //       var reviewFormPanelDropTarget = new Ext.dd.DropTarget(reviewFormPanelDropTargetEl, {
+  //         ddGroup: 'gridDDGroup',
+  //         notifyEnter: function (ddSource, e, data) {
+  //           var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
+  //           var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
+  //           if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
+  //             // // Add some flare to invite drop.
+  //             // reviewForm.body.stopFx();
+  //             // reviewForm.body.highlight("00ff00", {
+  //             //   attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
+  //             //   endColor: "f0f0f0",
+  //             //   easing: 'backBoth',
+  //             //   duration: 0.5
+  //             // });
+  //           } else {
+  //             return (reviewFormPanelDropTarget.dropNotAllowed);
+  //           }
+  //         },
+  //         notifyOver: function (ddSource, e, data) {
+  //           var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
+  //           var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
+  //           if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
+  //             return (reviewFormPanelDropTarget.dropAllowed);
+  //           } else {
+  //             return (reviewFormPanelDropTarget.dropNotAllowed);
+  //           }
+  //         },
+  //         notifyDrop: function (ddSource, e, data) {
+  //           // var editableDest = true
+  //           var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
+  //           var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
+  //           if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
+  //             // Reference the record (single selection) for readability
+  //             //var selectedRecord = ddSource.dragData.selections[0];
+  //             var selectedRecord = data.selections[0];
+  //             // Load the record into the form
+  //             var sCombo = Ext.getCmp('result-combo' + idAppend);
+  //             var sComment = Ext.getCmp('result-comment' + idAppend);
+  //             var aCombo = Ext.getCmp('action-combo' + idAppend);
+  //             var aComment = Ext.getCmp('action-comment' + idAppend);
+  //             if (!sCombo.disabled && selectedRecord.data.autoResult == false) {
+  //               sCombo.setValue(selectedRecord.data.result);
+  //             }
+  //             //if (!sComment.disabled && selectedRecord.data.autoResult == 0) {
+  //             sComment.setValue(selectedRecord.data.resultComment);
+  //             //}
+  //             if (sCombo.getValue() === 'fail') {
+  //               aCombo.enable();
+  //               aComment.enable();
+  //             } else {
+  //               aCombo.disable();
+  //               aComment.disable();
+  //             }
+  //             if (!aCombo.disabled) {
+  //               aCombo.setValue(selectedRecord.data.action);
+  //             }
+  //             if (!aComment.disabled) {
+  //               aComment.setValue(selectedRecord.data.actionComment);
+  //             }
+  //             // reviewForm.body.stopFx();
+  //             // reviewForm.body.highlight("eeeeee", {
+  //             //   attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
+  //             //   endColor: "FFFFFF",
+  //             //   easing: 'easeIn',
+  //             //   duration: 1
+  //             // })
+  //             reviewForm.setReviewFormItemStates(reviewForm)
+
+  //           }
+  //           return (true);
+
+  //         }
+  //       }); // end DropTarget
+  //     }, // end render
+  //     // clientvalidation: setReviewFormItemStates
+  //   } // end listeners
+  // });
+
+  reviewForm.setReviewFormItemStates = function () {}
+  // reviewForm.setReviewFormItemStates = function (fp, valid) {
+  //   var resultCombo = Ext.getCmp('result-combo' + idAppend);
+  //   var resultComment = Ext.getCmp('result-comment' + idAppend);
+  //   var actionCombo = Ext.getCmp('action-combo' + idAppend);
+  //   var actionComment = Ext.getCmp('action-comment' + idAppend);
+  //   var button1 = Ext.getCmp('reviewForm-button-1' + idAppend); // left button
+  //   var button2 = Ext.getCmp('reviewForm-button-2' + idAppend); // right button
+  //   var attachButton = Ext.getCmp('attachmentsGrid' + idAppend).fileUploadField; // 'add attachment' button
+  //   var autoResultField = Ext.getCmp('autoResult' + idAppend); // hidden 'autoResult' field
+
+  //   // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
+  //   var editable = (fp.groupGridRecord.data.status === '' || fp.groupGridRecord.data.status === 'saved' || fp.groupGridRecord.data.status === 'rejected');
+  //   resultCombo.setDisabled(!editable); // disable if not editable
+  //   resultComment.setDisabled(!editable);
+  //   actionCombo.setDisabled(!editable);
+  //   actionComment.setDisabled(!editable);
+
+  //   if (autoResultField.value == true && resultCombo.value === 'notapplicable') {
+  //     autoResultField.value = false;
+  //   }
+
+  //   if (autoResultField.value == true) { // Disable editing for autoResult
+  //     resultCombo.disable();
+  //     resultComment.disable();
+  //   }
+
+  //   if (editable) {
+  //     if (resultCombo.value === 'fail') { // Result is 'Open'
+  //       actionCombo.enable();
+  //       actionComment.enable();
+  //     } else {
+  //       actionCombo.disable();
+  //       actionComment.disable();
+  //     }
+  //     if (resultCombo.value === '' || resultCombo.value === undefined || resultCombo.value === null) {
+  //       resultComment.disable();
+  //     }
+  //   }
+
+  //   //Disable the add attachment button if the review has not been saved yet
+  //   if (fp.groupGridRecord.data.result == "") {
+  //     attachButton.disable();
+  //     attachButton.button.setTooltip('This button is disabled because the review has never been saved.');
+  //   } else {
+  //     attachButton.enable();
+  //     //attachButton.setTooltip('Attach a file to this review.'); 
+  //     attachButton.button.setTooltip('');
+  //   }
+
+  //   if (isReviewComplete(resultCombo.value, resultComment.getValue(), actionCombo.value, actionComment.getValue())) {
+  //     if (fp.reviewChanged()) {
+  //       // review has been changed (is dirty)
+  //       switch (fp.groupGridRecord.data.status) {
+  //         case '':
+  //         case 'saved':
+  //           // button 1
+  //           button1.enable();
+  //           button1.setText('Save without submitting');
+  //           button1.setIconClass('sm-database-save-icon');
+  //           button1.actionType = 'save';
+  //           button1.setTooltip('');
+  //           // button 2
+  //           button2.enable();
+  //           button2.setText('Save and Submit');
+  //           button2.actionType = 'save and submit';
+  //           button2.setTooltip('');
+  //           break;
+  //         case 'submitted': // 'ready' (a.k.a 'submitted'), dirty review can't happen
+  //           break;
+  //         case 'rejected': // 'rejected'
+  //           // button 1
+  //           button1.enable();
+  //           button1.setText('Save without submitting');
+  //           button1.setIconClass('sm-database-save-icon');
+  //           button1.actionType = 'save';
+  //           button1.setTooltip('');
+  //           // button 2
+  //           button2.enable();
+  //           button2.setText('Save and Resubmit');
+  //           button2.actionType = 'save and submit';
+  //           button2.setTooltip('');
+  //           break;
+  //         case 'accepted': // 'approved', dirty review can't happen
+  //           break;
+  //       }
+  //     } else {
+  //       // review has not been changed (is in last saved state)
+  //       switch (fp.groupGridRecord.data.status) {
+  //         case '':
+  //         case 'saved': // in progress
+  //           // button 1
+  //           button1.disable();
+  //           button1.setText('Save without submitting');
+  //           button1.setIconClass('sm-database-save-icon');
+  //           button1.actionType = '';
+  //           button1.setTooltip('This button is disabled because the review has not been modified.');
+  //           // button 2
+  //           button2.enable();
+  //           button2.setText('Submit');
+  //           button2.actionType = 'submit';
+  //           button2.setTooltip('');
+  //           break;
+  //         case 'accepted':
+  //         case 'submitted': // ready
+  //           // button 1
+  //           button1.enable();
+  //           button1.setText('Unsubmit');
+  //           button1.setIconClass('sm-ready-flip-icon');
+  //           button1.actionType = 'unsubmit';
+  //           button1.setTooltip('');
+  //           // button 2
+  //           button2.disable();
+  //           button2.setText('Submit');
+  //           button2.actionType = '';
+  //           button2.setTooltip('This button is disabled because the review has already been submitted.');
+  //           // review fields
+  //           break;
+  //         case 'rejected': // rejected
+  //           // button 1
+  //           button1.disable();
+  //           button1.setText('Save without submitting');
+  //           button1.setIconClass('sm-database-save-icon');
+  //           button1.actionType = '';
+  //           button1.setTooltip('This button is disabled because the review has not been modified.');
+  //           // button 2
+  //           button2.disable();
+  //           button2.setText('Save and Resubmit');
+  //           button2.actionType = '';
+  //           button2.setTooltip('This button is disabled because the review has not been modified.');
+  //           break;
+  //         // case 'accepted': // approved
+  //         //   // we should never get here because of the earlier 'if' statement
+  //         //   // button 1
+  //         //   button1.hide();
+  //         //   button1.setText('Save without submitting');
+  //         //   button1.setIconClass('sm-database-save-icon');
+  //         //   button1.actionType = '';
+  //         //   // button 2
+  //         //   button2.hide();
+  //         //   button2.setText('Save and Submit');
+  //         //   button2.actionType = '';
+  //         //   break;
+  //       }
+  //     }
+  //   } else {
+  //     // review is incomplete
+  //     if (fp.reviewChanged()) {
+  //       // review has been changed
+  //       // button 1
+  //       button1.enable();
+  //       button1.setText('Save without submitting');
+  //       button1.setIconClass('sm-database-save-icon');
+  //       button1.actionType = 'save and unsubmit';
+  //       button1.setTooltip('');
+  //       // button 2
+  //       button2.disable();
+  //       button2.setText('Save and Submit');
+  //       button2.actionType = '';
+  //       button2.setTooltip('This button is disabled because the review is not complete and cannot be submitted.');
+  //     } else {
+  //       // review has not been changed (as loaded)
+  //       // button 1
+  //       button1.disable();
+  //       button1.setText('Save without submitting');
+  //       button1.setIconClass('sm-database-save-icon');
+  //       button1.actionType = '';
+  //       button1.setTooltip('This button is disabled because the review has not been modified.');
+  //       // button 2
+  //       button2.disable();
+  //       button2.setText('Save and Submit');
+  //       button2.actionType = '';
+  //       button2.setTooltip('This button is disabled because the review is not complete and cannot be submitted.');
+  //     }
+  //   }
+  // };
 
   /******************************************************/
   // END input form
@@ -1679,15 +1831,8 @@ async function addReview( params ) {
     items: reviewItems,
     listeners: {
       beforeclose: function (p) {
-        var resultCombo = Ext.getCmp('result-combo' + idAppend);
-        var resultComment = Ext.getCmp('result-comment' + idAppend);
-        var actionCombo = Ext.getCmp('action-combo' + idAppend);
-        var actionComment = Ext.getCmp('action-comment' + idAppend);
-
-        var isDirty = (resultCombo.lastSavedData != resultCombo.value) || (resultComment.lastSavedData != resultComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
-
-        //var isDirty = Ext.getCmp('reviewForm' + idAppend).getForm().isDirty();
-        var isValid = Ext.getCmp('reviewForm' + idAppend).getForm().isValid();
+        var isDirty = reviewForm.isDirty();
+        var isValid = reviewForm.getForm().isValid();
 
         if (isDirty && isValid) {
           Ext.Msg.show({
@@ -1703,8 +1848,8 @@ async function addReview( params ) {
                   });
                   break;
                 case 'no':
-                  Ext.getCmp('result-combo' + idAppend).changed = false;
-                  Ext.getCmp('action-combo' + idAppend).changed = false;
+                  // Ext.getCmp('result-combo' + idAppend).changed = false;
+                  // Ext.getCmp('action-combo' + idAppend).changed = false;
                   Ext.getCmp('main-tab-panel').remove('reviewTab' + idAppend);
                   break;
                 case 'cancel':
