@@ -1262,31 +1262,9 @@ async function addReview( params ) {
       }
   
       // Display the review
-      reviewForm.loadValues(review)
-  
       reviewForm.groupGridRecord = groupGridRecord
-      reviewForm.isLoaded = true
-      // let resultCombo = form.findField('result-combo' + idAppend)
-      // let resultComment = form.findField('result-comment' + idAppend)
-      // let actionCombo = form.findField('action-combo' + idAppend)
-      // let actionComment = form.findField('action-comment' + idAppend)
-  
-      // // Initialize the lastSavedData properties
-      // if ( resultCombo.value === null ) { resultCombo.value = '' }
-      // resultCombo.lastSavedData = resultCombo.value
-      // if (review.resultComment === null) {
-      //   resultComment.lastSavedData = ""
-      // } else {
-      //   resultComment.lastSavedData = resultComment.getValue()
-      // }
-      // if ( actionCombo.value === null ) { actionCombo.value = '' }
-      // actionCombo.lastSavedData = actionCombo.value
-      // if (review.actionComment === null) {
-      //   actionComment.lastSavedData = ""
-      // } else {
-      //   actionComment.lastSavedData = actionComment.getValue()
-      // }
-  
+      reviewForm.loadValues(review)
+      reviewForm.isLoaded = true 
   
       // load others
       Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
@@ -1602,7 +1580,7 @@ async function addReview( params ) {
   //   } // end listeners
   // });
 
-  reviewForm.setReviewFormItemStates = function () {}
+  // reviewForm.setReviewFormItemStates = function () {}
   // reviewForm.setReviewFormItemStates = function (fp, valid) {
   //   var resultCombo = Ext.getCmp('result-combo' + idAppend);
   //   var resultComment = Ext.getCmp('result-comment' + idAppend);

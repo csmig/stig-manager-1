@@ -25,7 +25,7 @@ SM.Review.Form.ResultCombo = Ext.extend(Ext.form.ComboBox, {
       valueField: 'result',
       displayField: 'resultStr',
       listeners: {
-        'render': function (combo) {
+        render: function (combo) {
           new Ext.ToolTip({
             target: combo.label.dom.getElementsByClassName('fa')[0],
             showDelay: 0,
@@ -56,10 +56,8 @@ SM.Review.Form.ResultTextArea = Ext.extend(Ext.form.TextArea, {
       name: 'resultComment',
       enableKeyEvents: true,
       listeners: {
-        'render': function (ta) {
-          ta.mon( ta.el, 'input', function (e) {
-            _this.form.setReviewFormItemStates(_this.form)
-          })
+        render: function (ta) {
+          ta.mon( ta.el, 'input', _this.onInput)
           new Ext.ToolTip({
             target: ta.label.dom.getElementsByClassName('fa')[0],
             showDelay: 0,
@@ -98,7 +96,7 @@ SM.Review.Form.ActionCombo = Ext.extend(Ext.form.ComboBox, {
       displayField: 'actionStr',
       valueField: 'action',
       listeners: {
-        'render': function (combo) {
+        render: function (combo) {
           new Ext.ToolTip({
             target: combo.label.dom.getElementsByClassName('fa')[0],
             showDelay: 0,
@@ -125,13 +123,10 @@ SM.Review.Form.ActionTextArea = Ext.extend(Ext.form.TextArea, {
       fieldLabel: 'Comment<br><i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
-      name: 'resultComment',
       name: 'actionComment',
       listeners: {
         'render': function (ta) {
-          ta.mon( ta.el, 'input', function (e) {
-            _this.form.setReviewFormItemStates(_this.form)
-          })
+          ta.mon( ta.el, 'input', _this.onInput)
           new Ext.ToolTip({
             target: ta.label.dom.getElementsByClassName('fa')[0],
             showDelay: 0,
@@ -162,10 +157,30 @@ SM.Review.Form.Button = Ext.extend(Ext.Button, {
 SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
   initComponent: function () {
     const _this = this
-    const rcb = new SM.Review.Form.ResultCombo({})
-    const rta = new SM.Review.Form.ResultTextArea({})
-    const acb = new SM.Review.Form.ActionCombo({})
-    const ata = new SM.Review.Form.ActionTextArea({})
+    const rcb = new SM.Review.Form.ResultCombo({ 
+      listeners: {
+        select: function () {
+          setReviewFormItemStates()
+        }
+      }
+    })
+    const rta = new SM.Review.Form.ResultTextArea({ 
+      onInput: function (e) {
+        _this.setReviewFormItemStates()
+      }
+    })
+    const acb = new SM.Review.Form.ActionCombo({ 
+      listeners: {
+        select: function () {
+          setReviewFormItemStates()
+        }
+      }
+ })
+    const ata = new SM.Review.Form.ActionTextArea({ 
+      onInput: function (e) {
+        _this.setReviewFormItemStates()
+      }
+    })
     const mdf = new Ext.form.DisplayField({
       anchor: '100% 2%',
       fieldLabel: 'Modified',
@@ -178,6 +193,224 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     const btn2 = new SM.Review.Form.Button({
       handler: _this.btnHandler
     })
+    const ack = new Ext.form.Checkbox({
+      boxLabel: 'Auto',
+      hideLabel: true,
+      allowBlank: true,
+      name: 'autoResult'
+    })
+
+    function reviewChanged () {
+      return (
+        rcb.lastSavedData != rcb.value) 
+        || (rta.lastSavedData != rta.getValue()) 
+        || (acb.lastSavedData != acb.value) 
+        || (ata.lastSavedData != ata.getValue()
+      )
+    }
+
+    function isDirty () {
+      return (
+        rcb.lastSavedData != rcb.value) 
+        || (rta.lastSavedData != rta.getValue()) 
+        || (acb.lastSavedData != acb.value) 
+        || (ata.lastSavedData != ata.getValue()
+      )
+    }
+
+    function loadValues (values) {
+      const form = _this.getForm()
+      form.setValues.call(form, values)
+      initLastSavedData()
+      // setReviewFormItemStates()
+    }
+
+    function initLastSavedData () {
+      if ( rcb.value === null ) { rcb.value = '' }
+      rcb.lastSavedData = rcb.value
+      rta.lastSavedData = rta.value === null ? '' : rta.value
+
+      if ( acb.value === null ) { acb.value = '' }
+      acb.lastSavedData = acb.value
+      ata.lastSavedData = ata.value === null ? '' : ata.value
+    }
+
+    function setReviewFormItemStates () {
+      const resultCombo =rcb
+      const resultComment = rta
+      const actionCombo = acb
+      const actionComment = ata
+      const autoResultField = ack
+      const button1 =btn1 // left button
+      const button2 = btn2 // right button
+      // const attachButton = Ext.getCmp('attachmentsGrid' + idAppend).fileUploadField; // 'add attachment' button
+      const fp = _this
+
+      // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
+      const editable = (fp.groupGridRecord.data.status === '' || fp.groupGridRecord.data.status === 'saved' || fp.groupGridRecord.data.status === 'rejected');
+      resultCombo.setDisabled(!editable); // disable if not editable
+      resultComment.setDisabled(!editable);
+      actionCombo.setDisabled(!editable);
+      actionComment.setDisabled(!editable);
+
+      if (autoResultField.value == true && resultCombo.value === 'notapplicable') {
+        autoResultField.value = false;
+      }
+
+      if (autoResultField.value == true) { // Disable editing for autoResult
+        resultCombo.disable();
+        resultComment.disable();
+      }
+
+      if (editable) {
+        if (resultCombo.value === 'fail') { // Result is 'Open'
+          actionCombo.enable();
+          actionComment.enable();
+        } else {
+          actionCombo.disable();
+          actionComment.disable();
+        }
+        if (resultCombo.value === '' || resultCombo.value === undefined || resultCombo.value === null) {
+          resultComment.disable();
+        }
+      }
+
+      //Disable the add attachment button if the review has not been saved yet
+      // if (fp.groupGridRecord.data.result == "") {
+      //   attachButton.disable();
+      //   attachButton.button.setTooltip('This button is disabled because the review has never been saved.');
+      // } else {
+      //   attachButton.enable();
+      //   //attachButton.setTooltip('Attach a file to this review.'); 
+      //   attachButton.button.setTooltip('');
+      // }
+
+      if (isReviewComplete(resultCombo.value, resultComment.getValue(), actionCombo.value, actionComment.getValue())) {
+        if (fp.reviewChanged()) {
+          // review has been changed (is dirty)
+          switch (fp.groupGridRecord.data.status) {
+            case '':
+            case 'saved':
+              // button 1
+              button1.enable();
+              button1.setText('Save without submitting');
+              button1.setIconClass('sm-database-save-icon');
+              button1.actionType = 'save';
+              button1.setTooltip('');
+              // button 2
+              button2.enable();
+              button2.setText('Save and Submit');
+              button2.actionType = 'save and submit';
+              button2.setTooltip('');
+              break;
+            case 'submitted': // 'ready' (a.k.a 'submitted'), dirty review can't happen
+              break;
+            case 'rejected': // 'rejected'
+              // button 1
+              button1.enable();
+              button1.setText('Save without submitting');
+              button1.setIconClass('sm-database-save-icon');
+              button1.actionType = 'save';
+              button1.setTooltip('');
+              // button 2
+              button2.enable();
+              button2.setText('Save and Resubmit');
+              button2.actionType = 'save and submit';
+              button2.setTooltip('');
+              break;
+            case 'accepted': // 'approved', dirty review can't happen
+              break;
+          }
+        } else {
+          // review has not been changed (is in last saved state)
+          switch (fp.groupGridRecord.data.status) {
+            case '':
+            case 'saved': // in progress
+              // button 1
+              button1.disable();
+              button1.setText('Save without submitting');
+              button1.setIconClass('sm-database-save-icon');
+              button1.actionType = '';
+              button1.setTooltip('This button is disabled because the review has not been modified.');
+              // button 2
+              button2.enable();
+              button2.setText('Submit');
+              button2.actionType = 'submit';
+              button2.setTooltip('');
+              break;
+            case 'accepted':
+            case 'submitted': // ready
+              // button 1
+              button1.enable();
+              button1.setText('Unsubmit');
+              button1.setIconClass('sm-ready-flip-icon');
+              button1.actionType = 'unsubmit';
+              button1.setTooltip('');
+              // button 2
+              button2.disable();
+              button2.setText('Submit');
+              button2.actionType = '';
+              button2.setTooltip('This button is disabled because the review has already been submitted.');
+              // review fields
+              break;
+            case 'rejected': // rejected
+              // button 1
+              button1.disable();
+              button1.setText('Save without submitting');
+              button1.setIconClass('sm-database-save-icon');
+              button1.actionType = '';
+              button1.setTooltip('This button is disabled because the review has not been modified.');
+              // button 2
+              button2.disable();
+              button2.setText('Save and Resubmit');
+              button2.actionType = '';
+              button2.setTooltip('This button is disabled because the review has not been modified.');
+              break;
+            // case 'accepted': // approved
+            //   // we should never get here because of the earlier 'if' statement
+            //   // button 1
+            //   button1.hide();
+            //   button1.setText('Save without submitting');
+            //   button1.setIconClass('sm-database-save-icon');
+            //   button1.actionType = '';
+            //   // button 2
+            //   button2.hide();
+            //   button2.setText('Save and Submit');
+            //   button2.actionType = '';
+            //   break;
+          }
+        }
+      } else {
+        // review is incomplete
+        if (fp.reviewChanged()) {
+          // review has been changed
+          // button 1
+          button1.enable();
+          button1.setText('Save without submitting');
+          button1.setIconClass('sm-database-save-icon');
+          button1.actionType = 'save and unsubmit';
+          button1.setTooltip('');
+          // button 2
+          button2.disable();
+          button2.setText('Save and Submit');
+          button2.actionType = '';
+          button2.setTooltip('This button is disabled because the review is not complete and cannot be submitted.');
+        } else {
+          // review has not been changed (as loaded)
+          // button 1
+          button1.disable();
+          button1.setText('Save without submitting');
+          button1.setIconClass('sm-database-save-icon');
+          button1.actionType = '';
+          button1.setTooltip('This button is disabled because the review has not been modified.');
+          // button 2
+          button2.disable();
+          button2.setText('Save and Submit');
+          button2.actionType = '';
+          button2.setTooltip('This button is disabled because the review is not complete and cannot be submitted.');
+        }
+      }      
+    }
     
     let config = {
       cls: 'sm-round-panel',
@@ -188,47 +421,37 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       groupGridRecord: {}, // STIG Manager defined property
       monitorValid: false,
       trackResetOnLoad: false,
-      reviewChanged: function () { // STIG Manager defined property
-        return (
-          rcb.lastSavedData != rcb.value) 
-          || (rta.lastSavedData != rta.getValue()) 
-          || (acb.lastSavedData != acb.value) 
-          || (ata.lastSavedData != ata.getValue()
-        )
-      },
-      isDirty: function () {
-        return (
-          rcb.lastSavedData != rcb.value) 
-          || (rta.lastSavedData != rta.getValue()) 
-          || (acb.lastSavedData != acb.value) 
-          || (ata.lastSavedData != ata.getValue()
-        )
-      },
-      loadValues: function (values) {
-        const form = _this.getForm()
-       form.setValues.call(form, values)
-        // Initialize the lastSavedData properties
-        if ( rcb.value === null ) { rcb.value = '' }
-        rcb.lastSavedData = rcb.value
-        if (values.resultComment === null) {
-          rta.lastSavedData = ""
-        } else {
-          rta.lastSavedData = rta.getValue()
-        }
-        if ( acb.value === null ) { acb.value = '' }
-        acb.lastSavedData = acb.value
-        if (values.actionComment === null) {
-          ata.lastSavedData = ""
-        } else {
-          ata.lastSavedData = ata.getValue()
-        }        
-      },
+      reviewChanged: reviewChanged,
+      isDirty: isDirty,
+      loadValues: loadValues,
+      initLastSavedData: initLastSavedData,
+      setReviewFormItemStates: setReviewFormItemStates,
       items: [
         {
           xtype: 'fieldset',
           anchor: '100%, 49%',
           title: 'Evaluation',
-          items: [rcb, rta]
+          items: [
+            {
+              layout: 'column',
+              baseCls: 'x-plain',
+              items: [
+                {
+                  width: 170,
+                  layout: 'form',
+                  baseCls: 'x-plain',
+                  items: [rcb]
+                },
+                {
+                  layout: 'form',
+                  baseCls: 'x-plain',
+                  items: [ack]
+                },
+              ]
+            },
+            rta
+          ]
+          // items: [rcb, ack, rta]
         },
         {
           xtype: 'fieldset',
@@ -287,7 +510,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                 if (!ata.disabled) {
                   ata.setValue(selectedRecord.data.actionComment);
                 }
-                reviewForm.setReviewFormItemStates(reviewForm)
+                _this.setReviewFormItemStates(reviewForm)
               }
               return (true);
             }
