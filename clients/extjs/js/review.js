@@ -5,7 +5,7 @@ async function addReview( params ) {
     method: 'GET'
   })
   let apiCollection = JSON.parse(result.response.responseText)
-  let apiSettings = apiCollection.metadata.neoSettings ? JSON.parse(apiCollection.metadata.neoSettings) : {
+  let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
     resultCommentEnabled: 'always',
     resultCommentRequired: 'always',
     actionCommentEnabled: 'findings',
@@ -1212,7 +1212,7 @@ async function addReview( params ) {
     title: 'Review on ' + leaf.assetName,
     padding: 10,
     labelWidth: 54,
-    fieldSettings: apiSettings,
+    fieldSettings: apiFieldSettings,
     btnHandler: function (btn) {
       console.log(btn)
       saveReview({

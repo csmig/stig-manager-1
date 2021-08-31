@@ -601,13 +601,13 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
                     'resultCommentEnabled',
                     'resultCommentRequired'
                 ]
-                const neoSettings = {}
+                const fieldSettings = {}
                 for (const field of reviewFields) {
-                    neoSettings[field] = o[field]
+                    fieldSettings[field] = o[field]
                     delete o[field]
                 }
                 o.metadata = {
-                    neoSettings: JSON.stringify(neoSettings)
+                    fieldSettings: JSON.stringify(fieldSettings)
                 }
                 return o
             },
@@ -808,15 +808,15 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
 
         })
         let settingsReviewFields = new SM.CollectionSettings.ReviewFields({
-            collectionSettings: JSON.parse(me.apiCollection?.metadata?.neoSettings ?? null),
+            collectionSettings: JSON.parse(me.apiCollection?.metadata?.fieldSettings ?? null),
             onFieldSelect: async function (fieldset) {
                 try {
-                    await putMetadataValue('neoSettings', JSON.stringify(fieldset.serialize()))
+                    await putMetadataValue('fieldSettings', JSON.stringify(fieldset.serialize()))
                 }
                 catch (e) {
                     alert(e.message)
                     try {
-                        const apiSettings = await getMetadataValue('neoSettings')
+                        const apiSettings = await getMetadataValue('fieldSettings')
                         fieldset.setValues(JSON.parse(apiSettings))
                     }
                     catch (e) {

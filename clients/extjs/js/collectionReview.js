@@ -16,6 +16,13 @@ async function addCollectionReview ( params ) {
 			method: 'GET',
 		  })
 		let apiCollection = JSON.parse(result.response.responseText)
+		let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
+			resultCommentEnabled: 'always',
+			resultCommentRequired: 'always',
+			actionCommentEnabled: 'findings',
+			actionCommentRequired: 'findings'
+		}
+	
 		result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/stigs/${leaf.benchmarkId}/assets`,
 			method: 'GET',
@@ -1004,21 +1011,22 @@ async function addCollectionReview ( params ) {
 
 				switch (this.getDataIndex(col)) {
 					case 'result':
+						return true
 					case 'resultComment':
-						if (record.data.autoResult == 1) {
-							return false;
-						} else {
+						if (apiFieldSettings.resultCommentEnabled === 'always') {
 							return true;
 						}
-						break;
+						if (apiFieldSettings.resultCommentEnabled === 'findings') {
+							return record.data.result === 'fail'
+						} 
 					case 'action':
 					case 'actionComment':
-						if (record.data.result == 'fail') {
+						if (apiFieldSettings.actionCommentEnabled === 'always') {
 							return true;
-						} else {
-							return false;
 						}
-						break;
+						if (apiFieldSettings.actionCommentEnabled === 'findings') {
+							return record.data.result === 'fail'
+						} 
 				}
 
 				return Ext.grid.ColumnModel.prototype.isCellEditable.call(this, col, row);
@@ -1206,7 +1214,7 @@ async function addCollectionReview ( params ) {
 						icon: 'img/lock-16.png',
 						id: 'reviewsGrid-approveButton' + idAppend,
 						text: 'Accept',
-						hidden: leaf.collectionGrant !== 4,
+						hidden: leaf.collectionGrant < 3,
 						handler: function (btn) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'accepted');
@@ -1214,7 +1222,7 @@ async function addCollectionReview ( params ) {
 					}
 					,{
 						xtype: 'tbseparator',
-						hidden: leaf.collectionGrant !== 4
+						hidden: leaf.collectionGrant < 3
 					}
 					,{
 						xtype: 'tbbutton',
@@ -1298,15 +1306,28 @@ async function addCollectionReview ( params ) {
 			reviewsGrid.getSelectionModel().clearSelections();
 		}
 
+		function isReviewComplete (result, rcomment, action, acomment) {
+			if (!result) return false
+      if (apiFieldSettings.resultCommentRequired === 'always' && !rcomment) return false
+      if (apiFieldSettings.resultCommentRequired === 'findings' 
+        && result === 'fail'
+        && !rcomment) return false
+      if (apiFieldSettings.actionCommentRequired === 'always'
+        && (!action || !acomment)) return false
+      if (apiFieldSettings.actionCommentRequired === 'findings'
+        && result === 'fail'
+        && (!action || !acomment)) return false
+      return true
+
+		}
+
 		function setReviewsGridButtonStates() {
 			const sm = reviewsGrid.getSelectionModel();
 			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
 			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
+			const rejectBtn = Ext.getCmp('rejectSubmitButton' + idAppend);
 			const selections = sm.getSelections();
 			const selLength = selections.length;
-			let approveBtnDisabled = false;
-			let submitBtnDisabled = false;
-			let rejectFormDisabled = false;
 			let approveBtnEnabled = true;
 			let submitBtnEnabled = true;
 			let rejectFormEnabled = true;
@@ -1401,7 +1422,7 @@ async function addCollectionReview ( params ) {
 			}
 			approveBtn.setDisabled(!approveBtnEnabled);
 			submitBtn.setDisabled(!submitBtnEnabled);
-			rejectFormPanel.setDisabled(!rejectFormEnabled);
+			rejectBtn.setDisabled(!rejectFormEnabled);
 		};
 		
 		async function handleStatusChange (grid,sm,status) {
@@ -1675,9 +1696,11 @@ async function addCollectionReview ( params ) {
 			}],
 			buttons: [{
 				text: 'Reject review with this feedback',
+				disabled: true,
 				id: 'rejectSubmitButton' + idAppend,
 				iconCls: 'sm-rejected-icon',
 				reviewsGrid: reviewsGrid,
+				hidden: leaf.collectionGrant < 3,
 				handler: handleRejections
 			}]
 		});
