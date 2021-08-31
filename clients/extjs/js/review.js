@@ -476,10 +476,7 @@ async function addReview( params ) {
                       reviewForm.isLoaded = false;
                       break;
                     case 'no':
-                      Ext.getCmp('result-combo' + idAppend).changed = false;
-                      Ext.getCmp('action-combo' + idAppend).changed = false;
                       reviewForm.isLoaded = false;
-
                       sm.selectRow(index);
                       break;
                     case 'cancel':
@@ -1215,8 +1212,13 @@ async function addReview( params ) {
     title: 'Review on ' + leaf.assetName,
     padding: 10,
     labelWidth: 54,
+    fieldSettings: apiSettings,
     btnHandler: function (btn) {
       console.log(btn)
+      saveReview({
+        source: 'form',
+        type: btn.actionType
+      })
     }
   })
 
@@ -1255,11 +1257,11 @@ async function addReview( params ) {
       form.reset();
       reviewForm.isLoaded = false
       
-      // Set the legacy editStr property
-      if (review.ts) {
-        let extDate = new Date(review.ts)
-        review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
-      }
+      // // Set the legacy editStr property
+      // if (review.ts) {
+      //   let extDate = new Date(review.ts)
+      //   review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
+      // }
   
       // Display the review
       reviewForm.groupGridRecord = groupGridRecord
@@ -1876,7 +1878,7 @@ async function addReview( params ) {
     // }
     let fp
     try {
-      fp = Ext.getCmp('reviewForm' + idAppend)
+      fp = reviewForm
       fp.getEl().mask('Saving...')
       // masktask = new Ext.util.DelayedTask(function(){
       //   Ext.getBody().mask('Saving...')
@@ -1889,7 +1891,7 @@ async function addReview( params ) {
         resultComment: fvalues.resultComment || null,
         action: fvalues.action || null,
         actionComment: fvalues.actionComment || null,
-        autoResult: fvalues.autoResult === 'true'
+        autoResult: fvalues.autoResult
       }
       let result, reviewFromApi
       switch (saveParams.type) {
@@ -1949,12 +1951,6 @@ async function addReview( params ) {
           break
       }
       // Update group grid
-      resultCombo = Ext.getCmp('result-combo' + idAppend)
-      resultComment = Ext.getCmp('result-comment' + idAppend)
-      actionCombo = Ext.getCmp('action-combo' + idAppend)
-      actionComment = Ext.getCmp('action-comment' + idAppend)
-      resultCombo.changed = false
-      actionCombo.changed = false
       fp.groupGridRecord.data.result = reviewFromApi.result
       fp.groupGridRecord.data.reviewComplete = reviewFromApi.reviewComplete
       fp.groupGridRecord.data.status = reviewFromApi.status
@@ -1962,8 +1958,10 @@ async function addReview( params ) {
       filterGroupStore()
 
       // Update reviewForm
-      let extDate = new Date(reviewFromApi.ts)
-      Ext.getCmp('editor' + idAppend).setValue(`${extDate.format('Y-m-d H:i')} by ${reviewFromApi.username}`)
+      reviewForm.loadValues(reviewFromApi)
+
+      // let extDate = new Date(reviewFromApi.ts)
+      // Ext.getCmp('editor' + idAppend).setValue(`${extDate.format('Y-m-d H:i')} by ${reviewFromApi.username}`)
 
       // Update history
       // append current state of review to history grid
@@ -1982,11 +1980,11 @@ async function addReview( params ) {
       reviewFromApi.history.push(currentReview)
       historyData.store.loadData(reviewFromApi.history)
 
-      //Reset lastSavedData to current values, so we do not trigger the save again:
-      resultCombo.lastSavedData = resultCombo.value;
-      resultComment.lastSavedData = resultComment.getValue()
-      actionCombo.lastSavedData = actionCombo.value
-      actionComment.lastSavedData = actionComment.getValue()
+      // //Reset lastSavedData to current values, so we do not trigger the save again:
+      // resultCombo.lastSavedData = resultCombo.value;
+      // resultComment.lastSavedData = resultComment.getValue()
+      // actionCombo.lastSavedData = actionCombo.value
+      // actionComment.lastSavedData = actionComment.getValue()
 
       //Continue the action that triggered this save (if any):					
       if (saveParams.source == "closeTab") {
