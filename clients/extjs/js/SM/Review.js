@@ -533,7 +533,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
           const reviewFormPanelDropTarget = new Ext.dd.DropTarget(reviewFormPanelDropTargetEl, {
             ddGroup: 'gridDDGroup',
             notifyEnter: function (ddSource, e, data) {
-              const editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
+              const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
               const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
               if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
                 // no action
@@ -542,7 +542,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               }
             },
             notifyOver: function (ddSource, e, data) {
-              const editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
+              const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
               const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
               if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
                 return (reviewFormPanelDropTarget.dropAllowed);
@@ -551,7 +551,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               }
             },
             notifyDrop: function (ddSource, e, data) {
-              const editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
+              const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
               const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
               if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
                 // Reference the record (single selection) for readability
@@ -574,7 +574,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                 if (!ata.disabled) {
                   ata.setValue(selectedRecord.data.actionComment);
                 }
-                _this.setReviewFormItemStates(reviewForm)
+                _this.setReviewFormItemStates()
               }
               return (true);
             }
