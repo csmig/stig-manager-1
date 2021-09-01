@@ -962,23 +962,6 @@ function getFileIcon (filename) {
 	}
 }
 
-function isReviewComplete (state,resultComment,action,actionComment) {
-	if (state === 'fail') { // Open
-		if (resultComment != '' && undefined != resultComment) {
-			if (action != null && action != '') {
-				if (actionComment != '' && actionComment != null) {
-					return true;
-				}
-			}
-		}
-	} else { // not Open
-		if (resultComment != '' && resultComment != null) {
-			return true;
-		}
-	}			
-	return false;
-}
-
 function duplicateRecords (srcStore,dstStore) {
 	var records = [];
 	srcStore.each(function(r){

@@ -1219,20 +1219,34 @@ async function addCollectionReview ( params ) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'accepted');
 						}
-					}
-					,{
+					},
+					{
 						xtype: 'tbseparator',
 						hidden: leaf.collectionGrant < 3
-					}
-					,{
+					},
+					{
 						xtype: 'tbbutton',
 						disabled: true,
-						icon: 'img/ready-16.png',  // <-- icon
+						icon: 'img/ready-16.png',
 						id: 'reviewsGrid-submitButton' + idAppend,
 						text: 'Submit',
 						handler: function (btn) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'submitted');
+						}
+					},
+					{
+						xtype: 'tbseparator'
+					},
+					{
+						xtype: 'tbbutton',
+						disabled: true,
+						icon: 'img/ready-flip-16.png',
+						id: 'reviewsGrid-unsubmitButton' + idAppend,
+						text: 'Unsubmit',
+						handler: function (btn) {
+							var selModel = reviewsGrid.getSelectionModel();
+							handleStatusChange (reviewsGrid,selModel,'saved');
 						}
 					}
 				]
@@ -1325,16 +1339,19 @@ async function addCollectionReview ( params ) {
 			const sm = reviewsGrid.getSelectionModel();
 			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
 			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
+			const unsubmitBtn = Ext.getCmp('reviewsGrid-unsubmitButton' + idAppend);
 			const rejectBtn = Ext.getCmp('rejectSubmitButton' + idAppend);
 			const selections = sm.getSelections();
 			const selLength = selections.length;
 			let approveBtnEnabled = true;
 			let submitBtnEnabled = true;
+			let unsubmitBtnEnabled = true;
 			let rejectFormEnabled = true;
 
 			if (selLength === 0) {
 				approveBtnEnabled = false
 				submitBtnEnabled = false
+				unsubmitBtnEnabled = false
 				rejectFormEnabled = false
 			}
 			else if (selLength === 1) {
@@ -1342,6 +1359,7 @@ async function addCollectionReview ( params ) {
 				if (!selection.data.status) { // a review doesn't exist
 					approveBtnEnabled = false
 					submitBtnEnabled = false
+					unsubmitBtnEnabled = false
 					rejectFormEnabled = false
 				}
 				else {
@@ -1357,27 +1375,32 @@ async function addCollectionReview ( params ) {
 								)) {
 									approveBtnEnabled = false
 									submitBtnEnabled = true
+									unsubmitBtnEnabled = false
 									rejectFormEnabled = false
 				
 							} else {
 								approveBtnEnabled = false
 								submitBtnEnabled = false
+								unsubmitBtnEnabled = false
 								rejectFormEnabled = false
 							}
 							break
 						case 'submitted':
 							approveBtnEnabled = true
 							submitBtnEnabled = false
+							unsubmitBtnEnabled = true
 							rejectFormEnabled = true
 							break
 						case 'rejected':
 							approveBtnEnabled = true
 							submitBtnEnabled = true
+							unsubmitBtnEnabled = true
 							rejectFormEnabled = true
 							break
 						case 'accepted':
 							approveBtnEnabled = false
-							submitBtnEnabled = true
+							submitBtnEnabled = false
+							unsubmitBtnEnabled = true
 							rejectFormEnabled = false
 							break
 					}
@@ -1417,11 +1440,13 @@ async function addCollectionReview ( params ) {
 				}
 				approveBtnEnabled = (counts.submitted || counts.rejected) && (!counts.unsaved && !counts.saved && !counts.savedComplete)  && (counts.accepted !== selLength)
 				submitBtnEnabled = (counts.savedComplete || counts.submitted || counts.accepted || counts.rejected) && (!counts.unsaved && !counts.saved) && (counts.submitted !== selLength)
+				unsubmitBtnEnabled = (counts.submitted || counts.accepted || counts.rejected) && (!counts.unsaved && !counts.saved)
 				rejectFormEnabled = counts.submitted && (!counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted && !counts.rejected)
 		
 			}
 			approveBtn.setDisabled(!approveBtnEnabled);
 			submitBtn.setDisabled(!submitBtnEnabled);
+			unsubmitBtn.setDisabled(!unsubmitBtnEnabled);
 			rejectBtn.setDisabled(!rejectFormEnabled);
 		};
 		

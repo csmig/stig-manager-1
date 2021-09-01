@@ -446,11 +446,20 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         else {
           // review has not been changed (as loaded)
           // button 1
-          button1.disable();
-          button1.setText('Save without submitting');
-          button1.setIconClass('sm-database-save-icon');
-          button1.actionType = '';
-          button1.setTooltip('This button is disabled because the review has not been modified.');
+          if (status === 'submitted') {
+            button1.enable();
+            button1.setText('Unsubmit');
+            button1.setIconClass('sm-ready-flip-icon');
+            button1.actionType = 'unsubmit';
+            button1.setTooltip('');
+          }
+          else {
+            button1.disable();
+            button1.setText('Save without submitting');
+            button1.setIconClass('sm-database-save-icon');
+            button1.actionType = '';
+            button1.setTooltip('This button is disabled because the review has not been modified.');
+          }
           // button 2
           button2.disable();
           button2.setText('Save and Submit');
