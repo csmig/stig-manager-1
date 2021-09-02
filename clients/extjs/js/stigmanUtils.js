@@ -1206,7 +1206,7 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 			statusIcons += '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected" style="padding-top: 1px;">';
 			break;
 		case 'accepted':
-			statusIcons += '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted" style="padding-top: 1px;">';
+			statusIcons += '<img src="img/star.svg" width=12 height=12 ext:qtip="Accepted" style="padding-top: 1px;">';
 			break;
 		default:
 			statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
@@ -1230,7 +1230,7 @@ function renderStatus(val) {
 			return '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected">';
 			break;
 		case 'accepted':
-			return '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted">';
+			return '<img src="img/star.svg" width=12 height=12 ext:qtip="Accepted">';
 			break;
 		default:
 			return '<img src="img/pixel.gif" width=12 height=12>';

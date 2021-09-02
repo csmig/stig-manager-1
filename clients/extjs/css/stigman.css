@@ -954,10 +954,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 .sm-note-icon {
  background-image: url(../img/note-16.png) !important;
 }
-.sm-lock-icon {
- background-image: url(../img/lock-16.png) !important;
-}
-.sm-assign-icon {
+.sm-star-icon {
+	background-image: url(../img/star.svg) !important;
+ }
+.sm-star-icon-16 {
+	background-image: url(../img/star.svg) !important;
+	background-size: 16px;
+ }
+ .sm-assign-icon {
  background-image: url(../img/right-arrow-16.png) !important;
 }
 .sm-unlock-icon {
@@ -972,8 +976,8 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 .sm-rejected-icon {
  background-image: url(../img/rejected-16.png) !important;
 }
-.x-btn-pressed.sm-lock-icon {
- background-image: url(../img/lock-16.png) !important;
+.x-btn-pressed.sm-star-icon {
+ background-image: url(../img/star.svg) !important;
 }
 .sm-save-icon {
  background-image: url(../img/save-16.png) !important;

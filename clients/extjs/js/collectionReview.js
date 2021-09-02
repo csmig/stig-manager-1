@@ -558,7 +558,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'approveCnt' + idAppend,
-					header: "<img src=img/lock-16.png width=12 height=12>", 
+					header: "<img src=img/star.svg width=12 height=12>", 
 					width: 32,
 					align: 'center',
 					renderer:renderOpen,
@@ -844,30 +844,8 @@ async function addCollectionReview ( params ) {
 						monitorValid: false,
 						listeners: {
 							select: function (combo,record,index) {
-								//if (this.gridEditor.gridRecord.result == 4 && record.data.result != 4) { // Open result has been changed 
 								if (combo.startValue == 'fail' && combo.value != 'fail') { // Open result has been changed 
-									if ((combo.gridEditor.gridRecord.data.action != 0 && combo.gridEditor.gridRecord.data.action != undefined) || combo.gridEditor.gridRecord.data.actionComment != '') {
-										combo.suspendEvents(false);
-										var confirmStr="You are closing an Open finding in a review that contains an existing Recommended Action. If you continue, the Action and Action Comment will be permanently deleted from the review.<BR><BR>Do you want to continue closing this finding?";
-										// the default z-index is 11000, which puts it above the mask used by Ext.Msg 
-										combo.gridEditor.el.setStyle('z-index','8000'); 
-										Ext.Msg.confirm("Confirm",confirmStr,function (btn,text) {
-											if (btn == 'yes') {
-												combo.gridEditor.gridRecord.data.action = null;
-												combo.gridEditor.gridRecord.data.actionComment = '';
-												combo.gridEditor.gridRecord.commit(false); // don't fire 'write' event on the store
-												
-												combo.resumeEvents();
-												combo.fireEvent("blur");
-											} else {
-												combo.setValue(combo.startValue);
-												combo.resumeEvents();
-												combo.fireEvent("blur");
-											}
-										});
-									} else {
-										combo.fireEvent("blur");
-									}
+
 								} else {
 									combo.fireEvent("blur");
 								}
@@ -891,8 +869,8 @@ async function addCollectionReview ( params ) {
 						return SM.styledEmptyRenderer(returnStr)
 					},
 					sortable: true
-				}
-				,{ 	
+				},
+				{ 	
 					id:'Detail' + idAppend,
 					header: 'Detail<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 100,
@@ -919,54 +897,8 @@ async function addCollectionReview ( params ) {
 							}
 						}
 					})
-				}
-				// ,{ 	
-				// 	id:'action' + idAppend,
-				// 	header: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>', 
-				// 	width: 80,
-				// 	fixed: true,
-				// 	dataIndex: 'action',
-				// 	renderer: function (val) {
-				// 		let actions = {
-				// 			remediate: 'Remediate',
-				// 			mitigate: 'Mitigate',
-				// 			exception: 'Exception'
-				// 		}
-				// 		return SM.styledEmptyRenderer(actions[val])
-				// 	},
-				// 	editor: new Ext.form.ComboBox({
-				// 		id: 'reviewsGrid-editor-actionCombo' + idAppend,
-				// 		mode: 'local',
-				// 		tpl: new Ext.XTemplate(
-				// 			'<tpl for=".">',
-				// 				'<tpl if="action == null">',
-				// 				'<div ext:qtip="Delete this action from the database" class="x-combo-list-item" style="color:grey;font-style:italic;">Delete</div>',
-				// 				'</tpl>',
-				// 				'<tpl if="action != null">',
-				// 				'<div class="x-combo-list-item">{actionStr}</div>',
-				// 				'</tpl>',
-				// 			'</tpl>'
-				// 		),
-				// 		valueNotFoundText: null,
-				// 		forceSelection: true,
-				// 		autoSelect: true,
-				// 		editable: false,
-				// 		store: new Ext.data.SimpleStore({
-				// 			fields: ['action', 'actionStr'],
-				// 			data: [['remediate', 'Remediate'], ['mitigate', 'Mitigate'], ['exception', 'Exception']]
-				// 		}),
-				// 		displayField:'actionStr',
-				// 		valueField: 'action',
-				// 		listeners: {
-				// 			select: function () {
-				// 				this.fireEvent("blur");
-				// 			}
-				// 		},
-				// 		triggerAction: 'all'
-				// 	}),
-				// 	sortable: true
-				// }
-				,{ 	
+				},
+				{ 	
 					id:'Comment' + idAppend,
 					header: 'Comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 100,
@@ -992,15 +924,15 @@ async function addCollectionReview ( params ) {
 						}
 					}),
 					sortable: true
+				},
+				{ 	
+					id:'userName' + idAppend,
+					header: "User", 
+					width: 100,
+					dataIndex: 'username',
+					fixed: 50,
+					sortable: true
 				}
-				// ,{ 	
-					// id:'userName' + idAppend,
-					// header: "User", 
-					// width: 100,
-					// dataIndex: 'userName',
-					// fixed: 50,
-					// sortable: true
-				// }
 			],
 			isCellEditable: function(col, row) {
 				var record = reviewsStore.getAt(row);
@@ -1211,7 +1143,7 @@ async function addCollectionReview ( params ) {
 					{
 						xtype: 'tbbutton',
 						disabled: true,
-						icon: 'img/lock-16.png',
+						iconCls: 'sm-star-icon-16',
 						id: 'reviewsGrid-approveButton' + idAppend,
 						text: 'Accept',
 						hidden: leaf.collectionGrant < 3,
