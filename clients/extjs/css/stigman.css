@@ -1,3 +1,14 @@
+.sm-review-auto-sprite {
+	color: #fcfcfc !important;
+	font: bold 9px Open Sans,helvetica, sans-serif;
+	position: relative;
+	top: 3px;
+	background-color: hsl(220deg 60% 50%);
+	padding: 1px 4px 2px 4px !important;
+	border-radius:  3px;
+	/* margin-left: 11px; */
+	user-select: none;
+}
 .x-grid3-hd .sm-question-circle {
 	color: hsl(0deg 0% 60%);
 	margin-left: 3px;

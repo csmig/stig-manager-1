@@ -140,6 +140,33 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
   }
 })
 
+SM.Review.Form.AutoSprite = Ext.extend(Ext.form.DisplayField, {
+  autoCreate: {
+    tag: 'span',
+    class: 'sm-review-auto-sprite'
+  },
+  setRawValue : function(v){
+    let displayValue = v ? 'Automated' : 'Manual'
+    this.value = v
+    if (this.rendered) {
+      this.el.dom.innerHTML = displayValue
+    }
+    return this.value
+  },
+  getRawValue : function(){
+    return this.value
+  },
+  initComponent: function () {
+    const _this = this
+    const config = {
+      name: 'autoResult',
+      hideLabel: true
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    SM.Review.Form.AutoSprite.superclass.initComponent.call(this)
+  }
+})
+
 SM.Review.Form.Button = Ext.extend(Ext.Button, {
   initComponent: function () {
     const _this = this
@@ -155,10 +182,24 @@ SM.Review.Form.Button = Ext.extend(Ext.Button, {
 SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
   initComponent: function () {
     const _this = this
+    const ack = new SM.Review.Form.AutoSprite(
+      {
+        style: {
+          marginLeft: '10px'
+        }
+      }
+    )
     const rcb = new SM.Review.Form.ResultCombo({ 
       // hideLabel: true,
       listeners: {
         select: function () {
+          if (ack.lastSavedData) {
+            if (this.value !== this.lastSavedData) {
+              ack.setValue(false)
+            } else {
+              ack.setValue(true)
+            }
+          }
           setReviewFormItemStates()
         }
       }
@@ -187,25 +228,28 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     const btn2 = new SM.Review.Form.Button({
       handler: _this.btnHandler
     })
-    const ack = new Ext.form.Checkbox({
-      boxLabel: 'Auto',
-      hideLabel: true,
-      allowBlank: true,
-      name: 'autoResult'
-    })
+    // const ack = new Ext.form.Checkbox({
+    //   boxLabel: 'Auto',
+    //   hideLabel: true,
+    //   allowBlank: true,
+    //   name: 'autoResult'
+    // })
+    // const ack = new Ext.Panel({
+    //   baseCls: 'x-plain',
+    //   padding: '0 0 0 10',
+    //   width: 100,
+    //   height: 22,
+    //   html: `<span class='sm-review-auto-sprite' ext:qtip="The result was deternined by an automated tool which means it was not evaluated by a person.">Automated</span>`
+    // })
+
+
+
     let status = ''
 
     function reviewChanged () {
       return (
         rcb.lastSavedData != rcb.value) 
-        || (dta.lastSavedData != dta.getValue()) 
-        || (cta.lastSavedData != cta.getValue()
-      )
-    }
-
-    function isDirty () {
-      return (
-        rcb.lastSavedData != rcb.value) 
+        || (ack.lastSavedData != ack.getValue()) 
         || (dta.lastSavedData != dta.getValue()) 
         || (cta.lastSavedData != cta.getValue()
       )
@@ -224,6 +268,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
 
     function initLastSavedData () {
       if ( rcb.value === null ) { rcb.value = '' }
+      ack.lastSavedData = ack.value
       rcb.lastSavedData = rcb.value
       dta.lastSavedData = dta.value === null ? '' : dta.value
       cta.lastSavedData = cta.value === null ? '' : cta.value
@@ -463,7 +508,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       monitorValid: false,
       trackResetOnLoad: false,
       reviewChanged: reviewChanged,
-      isDirty: isDirty,
       loadValues: loadValues,
       initLastSavedData: initLastSavedData,
       isReviewSubmittable: isReviewSubmittable,
@@ -490,11 +534,12 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                   baseCls: 'x-plain',
                   items: [rcb]
                 },
-                {
-                  layout: 'form',
-                  baseCls: 'x-plain',
-                  items: [ack]
-                },
+                ack
+                // {
+                //   layout: 'form',
+                //   baseCls: 'x-plain',
+                //   items: [ack]
+                // },
               ]
             }
           ]
@@ -570,11 +615,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                   baseCls: 'x-plain',
                   items: [rcb]
                 },
-                {
-                  layout: 'form',
-                  baseCls: 'x-plain',
-                  items: [ack]
-                },
+                ack
               ]
             },
             dta, cta
