@@ -596,10 +596,10 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
                     }
                 })
                 const reviewFields = [
-                    'actionCommentEnabled',
-                    'actionCommentRequired',
-                    'resultCommentEnabled',
-                    'resultCommentRequired'
+                    'commentEnabled',
+                    'commentRequired',
+                    'detailEnabled',
+                    'detailRequired'
                 ]
                 const fieldSettings = {}
                 for (const field of reviewFields) {
@@ -964,58 +964,58 @@ SM.CollectionSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         _this.collectionSettings = _this.collectionSettings ?? {
-            resultCommentEnabled: 'always',
-            resultCommentRequired: 'always',
-            actionCommentEnabled: 'findings',
-            actionCommentRequired: 'findings'
+            detailEnabled: 'always',
+            detailRequired: 'always',
+            commentEnabled: 'findings',
+            commentRequired: 'findings'
         }
-        const resultCommentEnabledCombo = new SM.CollectionSettings.FieldActiveComboBox({
-            name: 'resultCommentEnabled',
-            value: _this.collectionSettings.resultCommentEnabled,
+        const detailEnabledCombo = new SM.CollectionSettings.FieldActiveComboBox({
+            name: 'detailEnabled',
+            value: _this.collectionSettings.detailEnabled,
             anchor: '-10',
             listeners: {
                 select: onSelect
             }
         })
-        const resultCommentRequiredCombo = new SM.CollectionSettings.FieldRequiredComboBox({
-            name: 'resultCommentRequired',
-            enabledField: resultCommentEnabledCombo,
-            value: _this.collectionSettings.resultCommentRequired,
+        const detailRequiredCombo = new SM.CollectionSettings.FieldRequiredComboBox({
+            name: 'detailRequired',
+            enabledField: detailEnabledCombo,
+            value: _this.collectionSettings.detailRequired,
             anchor: '100%',
             listeners: {
                 select: onSelect
             }
         })
-        resultCommentEnabledCombo.requiredField = resultCommentRequiredCombo
+        detailEnabledCombo.requiredField = detailRequiredCombo
 
-        const actionCommentEnabledCombo = new SM.CollectionSettings.FieldActiveComboBox({
-            name: 'actionCommentEnabled',
-            value: _this.collectionSettings.actionCommentEnabled,
+        const commentEnabledCombo = new SM.CollectionSettings.FieldActiveComboBox({
+            name: 'commentEnabled',
+            value: _this.collectionSettings.commentEnabled,
             anchor: '-10',
             listeners: {
                 select: onSelect
             }
         })
-        // actionCommentEnabledCombo.setValue('findings')
+        // commentEnabledCombo.setValue('findings')
 
-        const actionCommentRequiredCombo = new SM.CollectionSettings.FieldRequiredComboBox({
-            name: 'actionCommentRequired',
-            enabledField: actionCommentEnabledCombo,
-            value: _this.collectionSettings.actionCommentRequired,
+        const commentRequiredCombo = new SM.CollectionSettings.FieldRequiredComboBox({
+            name: 'commentRequired',
+            enabledField: commentEnabledCombo,
+            value: _this.collectionSettings.commentRequired,
             anchor: '100%',
             listeners: {
                 select: onSelect
             }
         })
-        actionCommentEnabledCombo.requiredField = actionCommentRequiredCombo
+        commentEnabledCombo.requiredField = commentRequiredCombo
 
         _this.serialize = function () {
             const output = {}
             const items = [
-                resultCommentEnabledCombo,
-                resultCommentRequiredCombo,
-                actionCommentEnabledCombo,
-                actionCommentRequiredCombo
+                detailEnabledCombo,
+                detailRequiredCombo,
+                commentEnabledCombo,
+                commentRequiredCombo
             ]
             for (const item of items) {
                 output[item.name] = item.value
@@ -1024,14 +1024,14 @@ SM.CollectionSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
         }
 
         _this.setValues = function (values) {
-            resultCommentEnabledCombo.setValue(values.resultCommentEnabled)
-            resultCommentRequiredCombo.setValue(values.resultCommentRequired)
-            actionCommentEnabledCombo.setValue(values.actionCommentEnabled)
-            actionCommentRequiredCombo.setValue(values.actionCommentRequired)
+            detailEnabledCombo.setValue(values.detailEnabled)
+            detailRequiredCombo.setValue(values.detailRequired)
+            commentEnabledCombo.setValue(values.commentEnabled)
+            commentRequiredCombo.setValue(values.commentRequired)
         }
 
         function onSelect (item, record, index) {
-            if (item.name === 'resultCommentEnabled' || item.name === 'actionCommentEnabled') {
+            if (item.name === 'detailEnabled' || item.name === 'commentEnabled') {
                 item.requiredField.setListByEnabledValue(item.value)
             }
             _this.onFieldSelect && _this.onFieldSelect(_this, item, record, index)
@@ -1060,14 +1060,14 @@ SM.CollectionSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                                 {
                                     xtype: 'displayfield',
                                     submitValue: false,
-                                    value: 'Result comment',
+                                    value: 'Evaluation Detail',
                                     height: 22
                                 },
                                 
                                 {
                                     xtype: 'displayfield',
                                     submitValue: false,
-                                    value: 'Action and comment',
+                                    value: 'Evaluation Comment',
                                     height: 22
                                 }
                             ]
@@ -1083,8 +1083,8 @@ SM.CollectionSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                                     submitValue: false,
                                     value: '<b>Enabled</b>'
                                 },
-                                resultCommentEnabledCombo,
-                                actionCommentEnabledCombo
+                                detailEnabledCombo,
+                                commentEnabledCombo
                             ]
                         },
                         {
@@ -1098,8 +1098,8 @@ SM.CollectionSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                                     submitValue: false,
                                     value: '<b>Required to submit</b>'
                                 },
-                                resultCommentRequiredCombo,
-                                actionCommentRequiredCombo,
+                                detailRequiredCombo,
+                                commentRequiredCombo,
                             ]
                         }
                     ]

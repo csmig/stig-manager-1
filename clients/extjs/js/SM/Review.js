@@ -31,7 +31,7 @@ SM.Review.Form.ResultCombo = Ext.extend(Ext.form.ComboBox, {
             showDelay: 0,
             dismissDelay: 0,
             autoWidth: true,
-            html: SM.resultTipText
+            html: SM.ResultTipText
           })
         }
       }
@@ -41,7 +41,7 @@ SM.Review.Form.ResultCombo = Ext.extend(Ext.form.ComboBox, {
   }
 })
 
-SM.Review.Form.ResultTextArea = Ext.extend(Ext.form.TextArea, {
+SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
   initComponent: function () {
     const _this = this
     const config = {
@@ -49,7 +49,7 @@ SM.Review.Form.ResultTextArea = Ext.extend(Ext.form.TextArea, {
       lastSavedData: "",
       allowBlank: true,
       // emptyText: 'Please address the specific items in the review.',
-      fieldLabel: 'Detail<br><i class= "fa fa-question-circle sm-question-circle"></i>',
+      fieldLabel: 'Detail<i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
       name: 'resultComment',
@@ -62,13 +62,13 @@ SM.Review.Form.ResultTextArea = Ext.extend(Ext.form.TextArea, {
             showDelay: 0,
             dismissDelay: 0,
             autoWidth: true,
-            html: SM.resultCommentTipText
+            html: SM.DetailTipText
           }) 
         }
       }
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
-    SM.Review.Form.ResultTextArea.superclass.initComponent.call(this)
+    SM.Review.Form.DetailTextArea.superclass.initComponent.call(this)
   }
 })
 
@@ -111,14 +111,14 @@ SM.Review.Form.ActionCombo = Ext.extend(Ext.form.ComboBox, {
   }
 })
 
-SM.Review.Form.ActionTextArea = Ext.extend(Ext.form.TextArea, {
+SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
   initComponent: function () {
     const _this = this
     const config = {
       cls: 'sm-review-action-textarea',
       lastSavedData: "",
       allowBlank: true,
-      fieldLabel: 'Comment<br><i class= "fa fa-question-circle sm-question-circle"></i>',
+      fieldLabel: 'Comment<i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
       name: 'actionComment',
@@ -130,13 +130,13 @@ SM.Review.Form.ActionTextArea = Ext.extend(Ext.form.TextArea, {
             showDelay: 0,
             dismissDelay: 0,
             autoWidth: true,
-            html: SM.actionCommentTipText
+            html: SM.CommentTipText
           }) 
         }
       }
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
-    SM.Review.Form.ActionTextArea.superclass.initComponent.call(this)
+    SM.Review.Form.CommentTextArea.superclass.initComponent.call(this)
   }
 })
 
@@ -163,20 +163,13 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         }
       }
     })
-    const rta = new SM.Review.Form.ResultTextArea({
+    const dta = new SM.Review.Form.DetailTextArea({
       anchor: '100%, 50%',
       onInput: function (e) {
         _this.setReviewFormItemStates()
       }
     })
-    const acb = new SM.Review.Form.ActionCombo({ 
-      listeners: {
-        select: function () {
-          setReviewFormItemStates()
-        }
-      }
- })
-    const ata = new SM.Review.Form.ActionTextArea({ 
+    const cta = new SM.Review.Form.CommentTextArea({ 
       anchor: '100%, 50%',
       onInput: function (e) {
         _this.setReviewFormItemStates()
@@ -205,18 +198,16 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     function reviewChanged () {
       return (
         rcb.lastSavedData != rcb.value) 
-        || (rta.lastSavedData != rta.getValue()) 
-        || (acb.lastSavedData != acb.value) 
-        || (ata.lastSavedData != ata.getValue()
+        || (dta.lastSavedData != dta.getValue()) 
+        || (cta.lastSavedData != cta.getValue()
       )
     }
 
     function isDirty () {
       return (
         rcb.lastSavedData != rcb.value) 
-        || (rta.lastSavedData != rta.getValue()) 
-        || (acb.lastSavedData != acb.value) 
-        || (ata.lastSavedData != ata.getValue()
+        || (dta.lastSavedData != dta.getValue()) 
+        || (cta.lastSavedData != cta.getValue()
       )
     }
 
@@ -234,32 +225,28 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     function initLastSavedData () {
       if ( rcb.value === null ) { rcb.value = '' }
       rcb.lastSavedData = rcb.value
-      rta.lastSavedData = rta.value === null ? '' : rta.value
-
-      if ( acb.value === null ) { acb.value = '' }
-      acb.lastSavedData = acb.value
-      ata.lastSavedData = ata.value === null ? '' : ata.value
+      dta.lastSavedData = dta.value === null ? '' : dta.value
+      cta.lastSavedData = cta.value === null ? '' : cta.value
     }
 
     function isReviewSubmittable () {
       if (!rcb.value) return false
-      if (_this.fieldSettings.resultCommentRequired === 'always' && !rta.getValue()) return false
-      if (_this.fieldSettings.resultCommentRequired === 'findings' 
+      if (_this.fieldSettings.detailRequired === 'always' && !dta.getValue()) return false
+      if (_this.fieldSettings.detailRequired === 'findings' 
         && rcb.value === 'fail'
-        && !rta.getValue()) return false
-      if (_this.fieldSettings.actionCommentRequired === 'always'
-        && (!acb.value || !ata.getValue())) return false
-      if (_this.fieldSettings.actionCommentRequired === 'findings'
+        && !dta.getValue()) return false
+      if (_this.fieldSettings.commentRequired === 'always'
+        && (!cta.getValue())) return false
+      if (_this.fieldSettings.commentRequired === 'findings'
         && rcb.value === 'fail'
-        && (!acb.value || !ata.getValue())) return false
+        && (!cta.getValue())) return false
       return true
     }
     
     function setReviewFormItemStates () {
       const resultCombo = rcb
-      const resultComment = rta
-      const actionCombo = acb
-      const actionComment = ata
+      const detailTextArea = dta
+      const commentTextArea = cta
       const autoResultField = ack
       const button1 = btn1 // left button
       const button2 = btn2 // right button
@@ -270,9 +257,8 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
       const editable = (status === '' || status === 'saved' || status === 'rejected')
       resultCombo.setDisabled(!editable) // disable if not editable
-      resultComment.setDisabled(!editable)
-      actionCombo.setDisabled(!editable)
-      actionComment.setDisabled(!editable)
+      detailTextArea.setDisabled(!editable)
+      commentTextArea.setDisabled(!editable)
       btn1.setDisabled(!editable)
       btn2.setDisabled(!editable)
 
@@ -283,41 +269,37 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
 
       // if (autoResultField.value == true) { // Disable editing for autoResult
       //   resultCombo.disable();
-      //   resultComment.disable();
+      //   detailTextArea.disable();
       // }
 
       if (editable) {
-        if (fieldSettings.resultCommentEnabled === 'always') {
-          resultComment.enable()
+        if (fieldSettings.detailEnabled === 'always') {
+          detailTextArea.enable()
         } 
-        else if (fieldSettings.resultCommentEnabled === 'findings') {
+        else if (fieldSettings.detailEnabled === 'findings') {
           if (resultCombo.value === 'fail') {
-            resultComment.enable()
+            detailTextArea.enable()
           }
           else {
-            resultComment.disable()
+            detailTextArea.disable()
           }
         } 
         
-        if (fieldSettings.actionCommentEnabled === 'always') {
-          actionCombo.enable()
-          actionComment.enable()
+        if (fieldSettings.commentEnabled === 'always') {
+          commentTextArea.enable()
         } 
-        else if (fieldSettings.actionCommentEnabled === 'findings') {
+        else if (fieldSettings.commentEnabled === 'findings') {
           if (resultCombo.value === 'fail') {
-            actionCombo.enable()
-            actionComment.enable()
+            commentTextArea.enable()
           }
           else {
-            actionCombo.disable()
-            actionComment.disable()
+            commentTextArea.disable()
           }
         } 
         
         if (resultCombo.value === '' || resultCombo.value === undefined || resultCombo.value === null) {
-          resultComment.disable()
-          actionCombo.disable()
-          actionComment.disable()
+          detailTextArea.disable()
+          commentTextArea.disable()
         }
       }
 
@@ -474,6 +456,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       cls: 'sm-round-panel',
       bodyCssClass: 'sm-review-form',
       footerCssClass: 'sm-review-footer',
+      labelWidth: 65,
       border: false,
       isLoaded: false, // STIG Manager defined property
       groupGridRecord: {}, // STIG Manager defined property
@@ -486,10 +469,10 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       isReviewSubmittable: isReviewSubmittable,
       setReviewFormItemStates: setReviewFormItemStates,
       fieldSettings: this.fieldSettings || {
-        resultCommentEnabled: 'always',
-        resultCommentRequired: 'always',
-        actionCommentEnabled: 'findings',
-        actionCommentRequired: 'findings' 
+        detailEnabled: 'always',
+        detailRequired: 'always',
+        commentEnabled: 'findings',
+        commentRequired: 'findings' 
       },
       itemsAlt: [
         {
@@ -540,7 +523,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               return ret;
             } 
           },
-          items: [rta, ata]
+          items: [dta, cta]
         },
         {
           xtype: 'fieldset',
@@ -566,7 +549,9 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                   }
                   ret.width -= target.getPadding('lr');
                   ret.height -= target.getPadding('tb');
-                  ret.height -= 34
+                  // change in this override to account for space used by 
+                  // the Result combo box and the 4px bottom-margin of each textarea
+                  ret.height -= 34 
               }
               return ret;
             } 
@@ -592,9 +577,9 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                 },
               ]
             },
-            rta, ata
+            dta, cta
           ]
-          // items: [rcb, ack, rta]
+          // items: [rcb, ack, dta]
         },
         {
           xtype: 'fieldset',
@@ -637,19 +622,14 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                 if (!rcb.disabled && selectedRecord.data.autoResult == false) {
                   rcb.setValue(selectedRecord.data.result);
                 }
-                rta.setValue(selectedRecord.data.resultComment);
+                dta.setValue(selectedRecord.data.resultComment);
                 if (rcb.getValue() === 'fail') {
-                  acb.enable();
-                  ata.enable();
+                  cta.enable();
                 } else {
-                  acb.disable();
-                  ata.disable();
+                  cta.disable();
                 }
-                if (!acb.disabled) {
-                  acb.setValue(selectedRecord.data.action);
-                }
-                if (!ata.disabled) {
-                  ata.setValue(selectedRecord.data.actionComment);
+                if (!cta.disabled) {
+                  cta.setValue(selectedRecord.data.actionComment);
                 }
                 _this.setReviewFormItemStates()
               }

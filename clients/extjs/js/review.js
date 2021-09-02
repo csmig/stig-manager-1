@@ -6,10 +6,10 @@ async function addReview( params ) {
   })
   let apiCollection = JSON.parse(result.response.responseText)
   let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
-    resultCommentEnabled: 'always',
-    resultCommentRequired: 'always',
-    actionCommentEnabled: 'findings',
-    actionCommentRequired: 'findings'
+    detailEnabled: 'always',
+    detailRequired: 'always',
+    commentEnabled: 'findings',
+    commentRequired: 'findings'
   }
 
 

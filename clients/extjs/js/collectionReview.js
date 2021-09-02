@@ -17,10 +17,10 @@ async function addCollectionReview ( params ) {
 		  })
 		let apiCollection = JSON.parse(result.response.responseText)
 		let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
-			resultCommentEnabled: 'always',
-			resultCommentRequired: 'always',
-			actionCommentEnabled: 'findings',
-			actionCommentRequired: 'findings'
+			detailEnabled: 'always',
+			detailRequired: 'always',
+			commentEnabled: 'findings',
+			commentRequired: 'findings'
 		}
 	
 		result = await Ext.Ajax.requestPromise({
@@ -824,7 +824,7 @@ async function addCollectionReview ( params ) {
 					align: 'left'
 				}
 				,{ 
-					id:'result' + idAppend,
+					id:'Result' + idAppend,
 					header: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
 					width: 70,
 					fixed: true,
@@ -893,8 +893,8 @@ async function addCollectionReview ( params ) {
 					sortable: true
 				}
 				,{ 	
-					id:'resultComment' + idAppend,
-					header: 'Result comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
+					id:'Detail' + idAppend,
+					header: 'Detail<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 100,
 					dataIndex: 'resultComment',
 					renderer: function (v) {
@@ -920,55 +920,55 @@ async function addCollectionReview ( params ) {
 						}
 					})
 				}
+				// ,{ 	
+				// 	id:'action' + idAppend,
+				// 	header: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>', 
+				// 	width: 80,
+				// 	fixed: true,
+				// 	dataIndex: 'action',
+				// 	renderer: function (val) {
+				// 		let actions = {
+				// 			remediate: 'Remediate',
+				// 			mitigate: 'Mitigate',
+				// 			exception: 'Exception'
+				// 		}
+				// 		return SM.styledEmptyRenderer(actions[val])
+				// 	},
+				// 	editor: new Ext.form.ComboBox({
+				// 		id: 'reviewsGrid-editor-actionCombo' + idAppend,
+				// 		mode: 'local',
+				// 		tpl: new Ext.XTemplate(
+				// 			'<tpl for=".">',
+				// 				'<tpl if="action == null">',
+				// 				'<div ext:qtip="Delete this action from the database" class="x-combo-list-item" style="color:grey;font-style:italic;">Delete</div>',
+				// 				'</tpl>',
+				// 				'<tpl if="action != null">',
+				// 				'<div class="x-combo-list-item">{actionStr}</div>',
+				// 				'</tpl>',
+				// 			'</tpl>'
+				// 		),
+				// 		valueNotFoundText: null,
+				// 		forceSelection: true,
+				// 		autoSelect: true,
+				// 		editable: false,
+				// 		store: new Ext.data.SimpleStore({
+				// 			fields: ['action', 'actionStr'],
+				// 			data: [['remediate', 'Remediate'], ['mitigate', 'Mitigate'], ['exception', 'Exception']]
+				// 		}),
+				// 		displayField:'actionStr',
+				// 		valueField: 'action',
+				// 		listeners: {
+				// 			select: function () {
+				// 				this.fireEvent("blur");
+				// 			}
+				// 		},
+				// 		triggerAction: 'all'
+				// 	}),
+				// 	sortable: true
+				// }
 				,{ 	
-					id:'action' + idAppend,
-					header: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>', 
-					width: 80,
-					fixed: true,
-					dataIndex: 'action',
-					renderer: function (val) {
-						let actions = {
-							remediate: 'Remediate',
-							mitigate: 'Mitigate',
-							exception: 'Exception'
-						}
-						return SM.styledEmptyRenderer(actions[val])
-					},
-					editor: new Ext.form.ComboBox({
-						id: 'reviewsGrid-editor-actionCombo' + idAppend,
-						mode: 'local',
-						tpl: new Ext.XTemplate(
-							'<tpl for=".">',
-								'<tpl if="action == null">',
-								'<div ext:qtip="Delete this action from the database" class="x-combo-list-item" style="color:grey;font-style:italic;">Delete</div>',
-								'</tpl>',
-								'<tpl if="action != null">',
-								'<div class="x-combo-list-item">{actionStr}</div>',
-								'</tpl>',
-							'</tpl>'
-						),
-						valueNotFoundText: null,
-						forceSelection: true,
-						autoSelect: true,
-						editable: false,
-						store: new Ext.data.SimpleStore({
-							fields: ['action', 'actionStr'],
-							data: [['remediate', 'Remediate'], ['mitigate', 'Mitigate'], ['exception', 'Exception']]
-						}),
-						displayField:'actionStr',
-						valueField: 'action',
-						listeners: {
-							select: function () {
-								this.fireEvent("blur");
-							}
-						},
-						triggerAction: 'all'
-					}),
-					sortable: true
-				}
-				,{ 	
-					id:'actionComment' + idAppend,
-					header: 'Action comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
+					id:'Comment' + idAppend,
+					header: 'Comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 100,
 					dataIndex: 'actionComment',
 					renderer: function (v) {
@@ -1013,18 +1013,18 @@ async function addCollectionReview ( params ) {
 					case 'result':
 						return true
 					case 'resultComment':
-						if (apiFieldSettings.resultCommentEnabled === 'always') {
+						if (apiFieldSettings.detailEnabled === 'always') {
 							return true;
 						}
-						if (apiFieldSettings.resultCommentEnabled === 'findings') {
+						if (apiFieldSettings.detailEnabled === 'findings') {
 							return record.data.result === 'fail'
 						} 
 					case 'action':
 					case 'actionComment':
-						if (apiFieldSettings.actionCommentEnabled === 'always') {
+						if (apiFieldSettings.commentEnabled === 'always') {
 							return true;
 						}
-						if (apiFieldSettings.actionCommentEnabled === 'findings') {
+						if (apiFieldSettings.commentEnabled === 'findings') {
 							return record.data.result === 'fail'
 						} 
 				}
@@ -1322,13 +1322,13 @@ async function addCollectionReview ( params ) {
 
 		function isReviewComplete (result, rcomment, action, acomment) {
 			if (!result) return false
-      if (apiFieldSettings.resultCommentRequired === 'always' && !rcomment) return false
-      if (apiFieldSettings.resultCommentRequired === 'findings' 
+      if (apiFieldSettings.detailRequired === 'always' && !rcomment) return false
+      if (apiFieldSettings.detailRequired === 'findings' 
         && result === 'fail'
         && !rcomment) return false
-      if (apiFieldSettings.actionCommentRequired === 'always'
+      if (apiFieldSettings.commentRequired === 'always'
         && (!action || !acomment)) return false
-      if (apiFieldSettings.actionCommentRequired === 'findings'
+      if (apiFieldSettings.commentRequired === 'findings'
         && result === 'fail'
         && (!action || !acomment)) return false
       return true
