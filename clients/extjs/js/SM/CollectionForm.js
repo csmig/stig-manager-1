@@ -1096,7 +1096,7 @@ SM.CollectionSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                                 {
                                     xtype: 'displayfield',
                                     submitValue: false,
-                                    value: '<b>Required</b>'
+                                    value: '<b>Required to submit</b>'
                                 },
                                 resultCommentRequiredCombo,
                                 actionCommentRequiredCombo,

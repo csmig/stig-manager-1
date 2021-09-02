@@ -46,11 +46,10 @@ SM.Review.Form.ResultTextArea = Ext.extend(Ext.form.TextArea, {
     const _this = this
     const config = {
       cls: 'sm-review-result-textarea',
-      anchor: '100% -30',
       lastSavedData: "",
       allowBlank: true,
       // emptyText: 'Please address the specific items in the review.',
-      fieldLabel: 'Comment<br><i class= "fa fa-question-circle sm-question-circle"></i>',
+      fieldLabel: 'Detail<br><i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
       name: 'resultComment',
@@ -117,7 +116,6 @@ SM.Review.Form.ActionTextArea = Ext.extend(Ext.form.TextArea, {
     const _this = this
     const config = {
       cls: 'sm-review-action-textarea',
-      anchor: '100% -30',
       lastSavedData: "",
       allowBlank: true,
       fieldLabel: 'Comment<br><i class= "fa fa-question-circle sm-question-circle"></i>',
@@ -158,13 +156,15 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
   initComponent: function () {
     const _this = this
     const rcb = new SM.Review.Form.ResultCombo({ 
+      // hideLabel: true,
       listeners: {
         select: function () {
           setReviewFormItemStates()
         }
       }
     })
-    const rta = new SM.Review.Form.ResultTextArea({ 
+    const rta = new SM.Review.Form.ResultTextArea({
+      anchor: '100%, 50%',
       onInput: function (e) {
         _this.setReviewFormItemStates()
       }
@@ -177,6 +177,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       }
  })
     const ata = new SM.Review.Form.ActionTextArea({ 
+      anchor: '100%, 50%',
       onInput: function (e) {
         _this.setReviewFormItemStates()
       }
@@ -490,14 +491,92 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         actionCommentEnabled: 'findings',
         actionCommentRequired: 'findings' 
       },
+      itemsAlt: [
+        {
+          xtype: 'fieldset',
+          title: 'Result',
+          items: [
+            {
+              layout: 'column',
+              // anchor: '100%',
+              baseCls: 'x-plain',
+              items: [
+                {
+                  width: 135,
+                  layout: 'form',
+                  baseCls: 'x-plain',
+                  items: [rcb]
+                },
+                {
+                  layout: 'form',
+                  baseCls: 'x-plain',
+                  items: [ack]
+                },
+              ]
+            }
+          ]
+        },
+        {
+          xtype: 'fieldset',
+          title: 'Commentary',
+          anchor: "100% -140",
+          layout: 'form',
+          layoutConfig: {
+            getLayoutTargetSize : function() {
+              var target = this.container.getLayoutTarget(), ret = {};
+              if (target) {
+                  ret = target.getViewSize();
+      
+                  // IE in strict mode will return a width of 0 on the 1st pass of getViewSize.
+                  // Use getStyleSize to verify the 0 width, the adjustment pass will then work properly
+                  // with getViewSize
+                  if (Ext.isIE9m && Ext.isStrict && ret.width == 0){
+                      ret =  target.getStyleSize();
+                  }
+                  ret.width -= target.getPadding('lr');
+                  ret.height -= target.getPadding('tb');
+                  ret.height -= 8
+              }
+              return ret;
+            } 
+          },
+          items: [rta, ata]
+        },
+        {
+          xtype: 'fieldset',
+          title: 'Attributions',
+          items: [mdf]
+        }
+      ],
       items: [
         {
           xtype: 'fieldset',
-          anchor: '100%, 49%',
+          layout: 'form',
+          layoutConfig: {
+            getLayoutTargetSize : function() {
+              var target = this.container.getLayoutTarget(), ret = {};
+              if (target) {
+                  ret = target.getViewSize();
+      
+                  // IE in strict mode will return a width of 0 on the 1st pass of getViewSize.
+                  // Use getStyleSize to verify the 0 width, the adjustment pass will then work properly
+                  // with getViewSize
+                  if (Ext.isIE9m && Ext.isStrict && ret.width == 0){
+                      ret =  target.getStyleSize();
+                  }
+                  ret.width -= target.getPadding('lr');
+                  ret.height -= target.getPadding('tb');
+                  ret.height -= 34
+              }
+              return ret;
+            } 
+          },
+          anchor: '100%, -60',
           title: 'Evaluation',
           items: [
             {
               layout: 'column',
+              // anchor: '100%',
               baseCls: 'x-plain',
               items: [
                 {
@@ -513,17 +592,15 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                 },
               ]
             },
-            rta
+            rta, ata
           ]
           // items: [rcb, ack, rta]
         },
         {
           xtype: 'fieldset',
-          anchor: '100%, 49%',
-          title: 'Recommendation',
-          items: [acb, ata]
-        },
-        mdf
+          title: 'Attributions',
+          items: [mdf]
+        }
       ],
       buttons: [btn1, btn2],
       listeners: {
