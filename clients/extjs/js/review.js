@@ -1461,6 +1461,7 @@ async function addReview( params ) {
       fp.groupGridRecord.data.result = reviewFromApi.result
       fp.groupGridRecord.data.reviewComplete = reviewFromApi.reviewComplete
       fp.groupGridRecord.data.status = reviewFromApi.status
+      fp.groupGridRecord.data.autoResult = reviewFromApi.autoResult
       fp.groupGridRecord.commit()
       filterGroupStore()
 

@@ -1213,8 +1213,8 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 			break;
 	}
 	statusIcons += '<img src="img/pixel.gif" width=4 height=12>';
-	if (record.data.hasAttach) {
-		statusIcons += '<img src="img/attach-16.png" width=12 height=12 ext:qtip="Has attachments" style="padding-top: 1px;">';
+	if (record.data.autoResult) {
+		statusIcons += '<img src="img/bot.svg" width=12 height=12 ext:qtip="Automated evaluation" style="padding-top: 1px;">';
 	} else {
 		statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
 	}
