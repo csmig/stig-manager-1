@@ -606,7 +606,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
           items: [
             {
               layout: 'column',
-              // anchor: '100%',
               baseCls: 'x-plain',
               items: [
                 {

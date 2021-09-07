@@ -844,10 +844,11 @@ async function addCollectionReview ( params ) {
 						monitorValid: false,
 						listeners: {
 							select: function (combo,record,index) {
-								if (combo.startValue == 'fail' && combo.value != 'fail') { // Open result has been changed 
-
-								} else {
+								if (combo.startValue !== combo.value ) { // Open result has been changed 
 									combo.fireEvent("blur");
+								} 
+								else {
+									console.log('No Change')
 								}
 							}
 						},
@@ -965,6 +966,10 @@ async function addCollectionReview ( params ) {
 			}
 		});
 
+		function showAcceptBtn () {
+			return leaf.collectionGrant < 3 || apiCollection.workflow !== 'emass'
+		}
+
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
@@ -1067,9 +1072,14 @@ async function addCollectionReview ( params ) {
 					try {
 						let jsonData = {}, result
 						if (e.record.data.status) {
-							// review exists, set status to saved
 							jsonData[e.field] = e.value
+							// review exists, set status to saved
 							jsonData.status = 'saved'
+							// unset autoResult if the result has changed
+							if (e.record.data.autoResult && (e.originalValue !== e.value)) {
+								jsonData.autoResult = false
+							}
+
 							result = await Ext.Ajax.requestPromise({
 								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
 								method: 'PATCH',
@@ -1095,7 +1105,11 @@ async function addCollectionReview ( params ) {
 						let apiReview = JSON.parse(result.response.responseText)
 						e.grid.getStore().loadData(apiReview, true)
 						// hack to reselect the record for setReviewsGridButtonStates()
-						e.grid.getSelectionModel().selectRow(e.grid.getStore().indexOfId(apiReview.assetId))
+						e.grid.getSelectionModel().onRefresh()
+						loadResources(e.grid.getStore().getById(apiReview.assetId))
+
+						setReviewsGridButtonStates();
+						// e.grid.getSelectionModel().selectRow(e.grid.getStore().indexOfId(apiReview.assetId))
 						// e.record.commit()
 		
 						e.grid.updateGroupStore(e.grid)
@@ -1146,7 +1160,7 @@ async function addCollectionReview ( params ) {
 						iconCls: 'sm-star-icon-16',
 						id: 'reviewsGrid-approveButton' + idAppend,
 						text: 'Accept',
-						hidden: leaf.collectionGrant < 3,
+						hidden: showAcceptBtn(),
 						handler: function (btn) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'accepted');
@@ -1154,7 +1168,7 @@ async function addCollectionReview ( params ) {
 					},
 					{
 						xtype: 'tbseparator',
-						hidden: leaf.collectionGrant < 3
+						hidden: showAcceptBtn()
 					},
 					{
 						xtype: 'tbbutton',
@@ -1173,7 +1187,7 @@ async function addCollectionReview ( params ) {
 					{
 						xtype: 'tbbutton',
 						disabled: true,
-						icon: 'img/ready-flip-16.png',
+						icon: 'img/disk-16.png',
 						id: 'reviewsGrid-unsubmitButton' + idAppend,
 						text: 'Unsubmit',
 						handler: function (btn) {
@@ -1252,17 +1266,17 @@ async function addCollectionReview ( params ) {
 			reviewsGrid.getSelectionModel().clearSelections();
 		}
 
-		function isReviewComplete (result, rcomment, action, acomment) {
+		function isReviewComplete (result, rcomment, acomment) {
 			if (!result) return false
       if (apiFieldSettings.detailRequired === 'always' && !rcomment) return false
       if (apiFieldSettings.detailRequired === 'findings' 
         && result === 'fail'
         && !rcomment) return false
       if (apiFieldSettings.commentRequired === 'always'
-        && (!action || !acomment)) return false
+        && (!acomment)) return false
       if (apiFieldSettings.commentRequired === 'findings'
         && result === 'fail'
-        && (!action || !acomment)) return false
+        && (!acomment)) return false
       return true
 
 		}
@@ -1302,7 +1316,6 @@ async function addCollectionReview ( params ) {
 							if (isReviewComplete(
 								selection.data.result,
 								selection.data.resultComment,
-								selection.data.action,
 								selection.data.actionComment
 								)) {
 									approveBtnEnabled = false
@@ -1357,7 +1370,6 @@ async function addCollectionReview ( params ) {
 						if (isReviewComplete(
 							selections[i].data.result,
 							selections[i].data.resultComment,
-							selections[i].data.action,
 							selections[i].data.actionComment
 						)) {
 							counts.savedComplete++
@@ -1417,6 +1429,9 @@ async function addCollectionReview ( params ) {
 						selections[i].commit()
 					}
 				}
+				if (selections.length === 1) {
+					loadResources(selections[0])
+				}
 				grid.updateGroupStore(grid)
 				setReviewsGridButtonStates()
 			}
@@ -1433,9 +1448,6 @@ async function addCollectionReview ( params ) {
 				var editor = e.grid.getColumnModel().getCellEditor(e.column,e.row);
 				editor.gridRecord = e.record;
 			}
-		};
-
-		function afterEdit(e) {
 		};
 		
 	/******************************************************/
@@ -1657,7 +1669,7 @@ async function addCollectionReview ( params ) {
 				id: 'rejectSubmitButton' + idAppend,
 				iconCls: 'sm-rejected-icon',
 				reviewsGrid: reviewsGrid,
-				hidden: leaf.collectionGrant < 3,
+				hidden: showAcceptBtn(),
 				handler: handleRejections
 			}]
 		});
