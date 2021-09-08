@@ -384,9 +384,8 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 		const expander = new Ext.ux.grid.RowExpander({
 			tpl: new Ext.XTemplate(
 			  '<b>Reviewer:</b> {username}</p>',
+			  '<tpl if="resultComment">',
 			  '<p><b>Result Comment:</b> {resultComment}</p>',
-			  '<tpl if="action">',
-			  '<p><b>Action:</b> {action}</p>',
 			  '</tpl>',
 			  '<tpl if="actionComment">',
 			  '<p><b>Action Comment:</b> {actionComment}</p>',

@@ -767,12 +767,11 @@ function Sm_HistoryData (idAppend) {
 
 	expander = new Ext.ux.grid.RowExpander({
 		tpl: new Ext.XTemplate(
-		  '<p><b>Result Comment:</b> {resultComment}</p>',
-		  '<tpl if="action">',
-		  '<p><b>Action:</b> {action}</p>',
+			'<tpl if="resultComment">',
+		  '<p><b>Detail:</b> {resultComment}</p>',
 		  '</tpl>',
 		  '<tpl if="actionComment">',
-		  '<p><b>Action Comment:</b> {actionComment}</p>',
+		  '<p><b>Comment:</b> {actionComment}</p>',
 		  '</tpl>'
 		)
 	  })
@@ -826,37 +825,7 @@ function Sm_HistoryData (idAppend) {
 				width: 50,
 				dataIndex: 'username',
 				sortable: true
-			},
-
-			// { 	
-			// 	header: "Result comment", 
-			// 	width: 100,
-			// 	dataIndex: 'resultComment',
-			// 	renderer: columnWrap,
-			// 	sortable: true
-			// },
-			// { 	
-			// 	header: "Action", 
-			// 	width: 80,
-			// 	fixed: true,
-			// 	dataIndex: 'action',
-			// 	renderer: function (val) {
-			// 		let actions = {
-			// 			remediate: 'Remediate',
-			// 			mitigate: 'Mitigate',
-			// 			exception: 'Exception'
-			// 		}
-			// 		return actions[val];
-			// 	},
-			// 	sortable: true
-			// },
-			// { 	
-			// 	header: "Action comment", 
-			// 	width: 100,
-			// 	dataIndex: 'actionComment',
-			// 	renderer: columnWrap,
-			// 	sortable: true
-			// }
+			}
 		]
 	});
 }

@@ -446,14 +446,6 @@ async function addReview( params ) {
       singleSelect: true,
       listeners: {
         beforerowselect: function (sm, index, keepExisting, record) {
-          // var resultCombo = Ext.getCmp('result-combo' + idAppend);
-          // var resultComment = Ext.getCmp('result-comment' + idAppend);
-          // var actionCombo = Ext.getCmp('action-combo' + idAppend);
-          // var actionComment = Ext.getCmp('action-comment' + idAppend);
-
-          // //var isDirty = (resultCombo.lastSavedData != resultCombo.value) || (resultComment.lastSavedData != resultComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
-          // var reviewForm = Ext.getCmp('reviewForm' + idAppend);
-
           if (reviewForm.groupGridRecord != record) { // perhaps the row select is the result of a view refresh
             var isDirty = reviewForm.reviewChanged();
             var isValid = reviewForm.getForm().isValid();
@@ -915,12 +907,11 @@ async function addReview( params ) {
 
   var expander = new Ext.ux.grid.RowExpander({
     tpl: new Ext.XTemplate(
-		  '<p><b>Result Comment:</b> {resultComment}</p>',
-		  '<tpl if="action">',
-		  '<p><b>Action:</b> {action}</p>',
-		  '</tpl>',
+      '<tpl if="resultComment">',
+		  '<p><b>Detail:</b> {resultComment}</p>',
+      '</tpl>',
 		  '<tpl if="actionComment">',
-		  '<p><b>Action Comment:</b> {actionComment}</p>',
+		  '<p><b>Comment:</b> {actionComment}</p>',
 		  '</tpl>'
     )
   });
@@ -981,38 +972,12 @@ async function addReview( params ) {
         sortable: true,
         renderer: renderResult
       },
-      // {
-      //   header: 'Comment',
-      //   width: 120,
-      //   dataIndex: 'resultComment',
-      //   renderer: columnWrap
-      // },
 			{ 	
 				header: "User", 
 				width: 50,
 				dataIndex: 'username',
 				sortable: true
-			},
-      // {
-      //   id: 'action' + idAppend,
-      //   header: "Action",
-      //   width: 80,
-      //   dataIndex: 'action',
-      //   sortable: true,
-      //   renderer: function (value, metaData, record, rowIndex, colIndex, store) {
-      //     switch (value) {
-      //       case 'remediate':
-      //         return "Remediate"
-      //         break
-      //       case 'mitigate':
-      //         return "Mitigate"
-      //         break
-      //       case 'exception':
-      //         return "Exception"
-      //         break
-      //     }
-      //   }
-      // }
+			}
     ],
     // width: 300,
     loadMask: true,
