@@ -980,7 +980,10 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
  background-image: url(../img/star.svg) !important;
 }
 .sm-save-icon {
- background-image: url(../img/save-16.png) !important;
+	background-image: url(../img/save-16.png) !important;
+ }
+.sm-disk-icon {
+ background-image: url(../img/disk-16.png) !important;
 }
 .sm-database-save-icon {
  background-image: url(../img/database.svg) !important;

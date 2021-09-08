@@ -367,12 +367,13 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               // button 1
               button1.enable();
               button1.setText('Save without submitting');
-              button1.setIconClass('sm-database-save-icon');
+              button1.setIconClass('sm-disk-icon');
               button1.actionType = 'save';
               button1.setTooltip('');
               // button 2
               button2.enable();
               button2.setText('Save and Submit');
+              button2.setIconClass('sm-ready-icon');
               button2.actionType = 'save and submit';
               button2.setTooltip('');
               break;
@@ -382,12 +383,13 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               // button 1
               button1.enable();
               button1.setText('Save without submitting');
-              button1.setIconClass('sm-database-save-icon');
+              button1.setIconClass('sm-disk-icon');
               button1.actionType = 'save';
               button1.setTooltip('');
               // button 2
               button2.enable();
               button2.setText('Save and Resubmit');
+              button2.setIconClass('sm-ready-icon');
               button2.actionType = 'save and submit';
               button2.setTooltip('');
               break;
@@ -403,12 +405,13 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               // button 1
               button1.disable();
               button1.setText('Save without submitting');
-              button1.setIconClass('sm-database-save-icon');
+              button1.setIconClass('sm-disk-icon');
               button1.actionType = '';
               button1.setTooltip('This button is disabled because the review has not been modified.');
               // button 2
               button2.enable();
               button2.setText('Submit');
+              button2.setIconClass('sm-ready-icon');
               button2.actionType = 'submit';
               button2.setTooltip('');
               break;
@@ -417,12 +420,13 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               // button 1
               button1.enable();
               button1.setText('Unsubmit');
-              button1.setIconClass('sm-ready-flip-icon');
+              button1.setIconClass('sm-disk-icon');
               button1.actionType = 'unsubmit';
               button1.setTooltip('');
               // button 2
               button2.disable();
               button2.setText('Submit');
+              button2.setIconClass('sm-ready-icon');
               button2.actionType = '';
               button2.setTooltip('This button is disabled because the review has already been submitted.');
               // review fields
@@ -431,12 +435,13 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               // button 1
               button1.disable();
               button1.setText('Save without submitting');
-              button1.setIconClass('sm-database-save-icon');
+              button1.setIconClass('sm-disk-icon');
               button1.actionType = '';
               button1.setTooltip('This button is disabled because the review has not been modified.');
               // button 2
               button2.disable();
               button2.setText('Save and Resubmit');
+              button2.setIconClass('sm-ready-icon');
               button2.actionType = '';
               button2.setTooltip('This button is disabled because the review has not been modified.');
               break;
@@ -462,12 +467,13 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
           // button 1
           button1.enable();
           button1.setText('Save without submitting');
-          button1.setIconClass('sm-database-save-icon');
+          button1.setIconClass('sm-disk-icon');
           button1.actionType = 'save and unsubmit';
           button1.setTooltip('');
           // button 2
           button2.disable();
           button2.setText('Save and Submit');
+          button2.setIconClass('sm-ready-icon');
           button2.actionType = '';
           button2.setTooltip('This button is disabled because the review is not complete and cannot be submitted.');
         } 
@@ -477,20 +483,21 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
           if (status === 'submitted') {
             button1.enable();
             button1.setText('Unsubmit');
-            button1.setIconClass('sm-ready-flip-icon');
+            button1.setIconClass('sm-disk-icon');
             button1.actionType = 'unsubmit';
             button1.setTooltip('');
           }
           else {
             button1.disable();
             button1.setText('Save without submitting');
-            button1.setIconClass('sm-database-save-icon');
+            button1.setIconClass('sm-disk-icon');
             button1.actionType = '';
             button1.setTooltip('This button is disabled because the review has not been modified.');
           }
           // button 2
           button2.disable();
           button2.setText('Save and Submit');
+          button2.setIconClass('sm-ready-icon');
           button2.actionType = '';
           button2.setTooltip('This button is disabled because the review is not complete and cannot be submitted.');
         }
@@ -518,64 +525,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         commentEnabled: 'findings',
         commentRequired: 'findings' 
       },
-      itemsAlt: [
-        {
-          xtype: 'fieldset',
-          title: 'Result',
-          items: [
-            {
-              layout: 'column',
-              // anchor: '100%',
-              baseCls: 'x-plain',
-              items: [
-                {
-                  width: 135,
-                  layout: 'form',
-                  baseCls: 'x-plain',
-                  items: [rcb]
-                },
-                ack
-                // {
-                //   layout: 'form',
-                //   baseCls: 'x-plain',
-                //   items: [ack]
-                // },
-              ]
-            }
-          ]
-        },
-        {
-          xtype: 'fieldset',
-          title: 'Commentary',
-          anchor: "100% -140",
-          layout: 'form',
-          layoutConfig: {
-            getLayoutTargetSize : function() {
-              var target = this.container.getLayoutTarget(), ret = {};
-              if (target) {
-                  ret = target.getViewSize();
-      
-                  // IE in strict mode will return a width of 0 on the 1st pass of getViewSize.
-                  // Use getStyleSize to verify the 0 width, the adjustment pass will then work properly
-                  // with getViewSize
-                  if (Ext.isIE9m && Ext.isStrict && ret.width == 0){
-                      ret =  target.getStyleSize();
-                  }
-                  ret.width -= target.getPadding('lr');
-                  ret.height -= target.getPadding('tb');
-                  ret.height -= 8
-              }
-              return ret;
-            } 
-          },
-          items: [dta, cta]
-        },
-        {
-          xtype: 'fieldset',
-          title: 'Attributions',
-          items: [mdf]
-        }
-      ],
       items: [
         {
           xtype: 'fieldset',

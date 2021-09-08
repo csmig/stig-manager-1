@@ -1162,6 +1162,15 @@ async function addReview( params ) {
     }
   })
 
+  function onFieldSettingsChanged (collectionId, fieldSettings) {
+    if (collectionId === apiCollection.collectionId) {
+      reviewForm.fieldSettings = fieldSettings
+      reviewForm.setReviewFormItemStates()
+    }
+  }
+  SM.Dispatcher.addListener('fieldsettingschanged', onFieldSettingsChanged)
+
+
   async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
     try {
       // return
@@ -1254,7 +1263,7 @@ async function addReview( params ) {
       // Attachments
       Ext.getCmp('attachmentsGrid' + idAppend).ruleId = groupGridRecord.data.ruleId
       Ext.getCmp('attachmentsGrid' + idAppend).loadArtifacts()
-      reviewForm.setReviewFormItemStates(reviewForm)
+      reviewForm.setReviewFormItemStates()
     }
     catch (e) {
       if (e.response) {
@@ -1317,6 +1326,9 @@ async function addReview( params ) {
     sm_GroupGridView: groupGrid.getView(),
     items: reviewItems,
     listeners: {
+      beforedestroy: () => {
+        SM.Dispatcher.removeListener('fieldsettingschanged', onFieldSettingsChanged)
+      },
       beforeclose: function (p) {
         var isDirty = reviewForm.isDirty();
         var isValid = reviewForm.getForm().isValid();

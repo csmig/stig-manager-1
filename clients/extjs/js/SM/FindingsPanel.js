@@ -414,12 +414,6 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			// 	sortable: true,
 			// 	hidden: true
 			// },
-            { 
-				header: "Action", 
-				width: 60, 
-				dataIndex: 'action', 
-				sortable: true, 
-			},
 			// { 
 			// 	header: "Status", 
 			// 	width: 50, 
