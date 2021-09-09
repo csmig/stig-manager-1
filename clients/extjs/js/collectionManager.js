@@ -18,7 +18,7 @@ async function addCollectionManager( params ) {
 		})
 		let apiCollection = JSON.parse(result.response.responseText)
 	
-		let collectionPanel = new SM.CollectionPanel({
+		let collectionPanel = new SM.Collection.ManagePanel({
 			collectionId: collectionId,
 			apiCollection: apiCollection,
 			title: `Collection Properties (ID ${collectionId})`,

@@ -1,6 +1,7 @@
 'use strict'
 
 Ext.ns('SM')
+Ext.ns('SM.Collection')
 
 SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
@@ -585,7 +586,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 Ext.reg('sm-user-grants-grid', SM.UserGrantsGrid);
 
-SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
+SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
         let config = {
             baseCls: 'x-plain',
@@ -680,12 +681,12 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
             }]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.CollectionForm.superclass.initComponent.call(this);
+        SM.Collection.CreateForm.superclass.initComponent.call(this);
     }
 })
 
-SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
-    // SM.CollectionPanel = Ext.extend(Ext.Panel, {
+SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
+    // SM.Collection.ManagePanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         let me = this
         async function putMetadataValue(key, value) {
@@ -826,7 +827,7 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             }
 
         })
-        let settingsReviewFields = new SM.FieldSettings.ReviewFields({
+        let settingsReviewFields = new SM.Collection.FieldSettings.ReviewFields({
             fieldSettings: JSON.parse(me.apiCollection?.metadata?.fieldSettings ?? null),
             onFieldSelect: async function (fieldset) {
                 try {
@@ -891,15 +892,15 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.CollectionPanel.superclass.initComponent.call(this);
+        SM.Collection.ManagePanel.superclass.initComponent.call(this);
     }
 })
 
-Ext.reg('sm-collection-panel', SM.CollectionPanel);
+Ext.reg('sm-collection-panel', SM.Collection.ManagePanel);
 
-Ext.ns('SM.FieldSettings')
+Ext.ns('SM.Collection.FieldSettings')
 
-SM.FieldSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, {
+SM.Collection.FieldSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
         let config = {
             displayField: 'display',
@@ -921,14 +922,14 @@ SM.FieldSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, {
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.FieldSettings.FieldActiveComboBox.superclass.initComponent.call(this)
+        SM.Collection.FieldSettings.FieldActiveComboBox.superclass.initComponent.call(this)
 
         this.store.loadData(data)
     }
 })
-Ext.reg('sm-field-active-combo', SM.FieldSettings.FieldActiveComboBox)
+Ext.reg('sm-field-active-combo', SM.Collection.FieldSettings.FieldActiveComboBox)
 
-SM.FieldSettings.FieldRequiredComboBox = Ext.extend(Ext.form.ComboBox, {
+SM.Collection.FieldSettings.FieldRequiredComboBox = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
         let _this = this
         let config = {
@@ -973,15 +974,15 @@ SM.FieldSettings.FieldRequiredComboBox = Ext.extend(Ext.form.ComboBox, {
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.FieldSettings.FieldRequiredComboBox.superclass.initComponent.call(this)
+        SM.Collection.FieldSettings.FieldRequiredComboBox.superclass.initComponent.call(this)
 
         this.setListByEnabledValue(this.enabledField?.value || 'always')
 
     }
 })
-Ext.reg('sm-field-required-combo', SM.FieldSettings.FieldRequiredComboBox)
+Ext.reg('sm-field-required-combo', SM.Collection.FieldSettings.FieldRequiredComboBox)
 
-SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
+SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         _this.fieldSettings = _this.fieldSettings ?? {
@@ -990,7 +991,7 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
             commentEnabled: 'findings',
             commentRequired: 'findings'
         }
-        const detailEnabledCombo = new SM.FieldSettings.FieldActiveComboBox({
+        const detailEnabledCombo = new SM.Collection.FieldSettings.FieldActiveComboBox({
             name: 'detailEnabled',
             value: _this.fieldSettings.detailEnabled,
             anchor: '-10',
@@ -998,7 +999,7 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                 select: onSelect
             }
         })
-        const detailRequiredCombo = new SM.FieldSettings.FieldRequiredComboBox({
+        const detailRequiredCombo = new SM.Collection.FieldSettings.FieldRequiredComboBox({
             name: 'detailRequired',
             enabledField: detailEnabledCombo,
             value: _this.fieldSettings.detailRequired,
@@ -1009,7 +1010,7 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
         })
         detailEnabledCombo.requiredField = detailRequiredCombo
 
-        const commentEnabledCombo = new SM.FieldSettings.FieldActiveComboBox({
+        const commentEnabledCombo = new SM.Collection.FieldSettings.FieldActiveComboBox({
             name: 'commentEnabled',
             value: _this.fieldSettings.commentEnabled,
             anchor: '-10',
@@ -1019,7 +1020,7 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
         })
         // commentEnabledCombo.setValue('findings')
 
-        const commentRequiredCombo = new SM.FieldSettings.FieldRequiredComboBox({
+        const commentRequiredCombo = new SM.Collection.FieldSettings.FieldRequiredComboBox({
             name: 'commentRequired',
             enabledField: commentEnabledCombo,
             value: _this.fieldSettings.commentRequired,
@@ -1128,12 +1129,13 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.FieldSettings.ReviewFields.superclass.initComponent.call(this);
+        SM.Collection.FieldSettings.ReviewFields.superclass.initComponent.call(this);
     }
 })
-Ext.reg('sm-collection-settings-review-fields', SM.FieldSettings.ReviewFields)
+Ext.reg('sm-collection-settings-review-fields', SM.Collection.FieldSettings.ReviewFields)
 
-SM.StatusSettings.AcceptCheckbox = Ext.extend(Ext.form.Checkbox, {
+Ext.ns('SM.Collection.StatusSettings')
+SM.Collection.StatusSettings.AcceptCheckbox = Ext.extend(Ext.form.Checkbox, {
     initComponent: function () {
         const _this = this
         const config = {}

@@ -297,7 +297,7 @@ function addCollectionAdmin( params ) {
 
 async function showCollectionProps(collectionId) {
   try {
-    let fp = new SM.CollectionForm({
+    let fp = new SM.Collection.CreateForm({
       btnText: collectionId ? 'Update' : 'Create',
       btnHandler: async () => {
         try {

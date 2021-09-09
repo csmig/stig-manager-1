@@ -761,7 +761,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         }
         if (n.attributes.action == 'collection-create') {
           let collectionRootNode = n.parentNode
-          let fp = new SM.CollectionForm({
+          let fp = new SM.Collection.CreateForm({
             btnText: 'Create',
             btnHandler: async () => {
               try {
