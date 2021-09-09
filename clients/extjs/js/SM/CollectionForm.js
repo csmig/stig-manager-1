@@ -3,24 +3,24 @@
 Ext.ns('SM')
 
 SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function() {
+    initComponent: function () {
         let config = {
             displayField: 'display',
             valueField: 'value',
             triggerAction: 'all',
             mode: 'local',
-            editable: false      
+            editable: false
         }
         let me = this
         let data = [
             ['emass', 'RMF Package'],
-            ['continuous','Continuous']
+            ['continuous', 'Continuous']
         ]
         this.store = new Ext.data.SimpleStore({
-            fields: ['value','display']
+            fields: ['value', 'display']
         })
-        this.store.on('load',function(store){
-            me.setValue(me.value) 
+        this.store.on('load', function (store) {
+            me.setValue(me.value)
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -31,6 +31,23 @@ SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
 })
 Ext.reg('sm-workflow-combo', SM.WorkflowComboBox);
 
+SM.CollectionDescriptionTextArea = Ext.extend(Ext.form.TextArea, {
+    initComponent: function () {
+        const _this = this
+        const config = {
+            cls: 'sm-review-result-textarea',
+            lastSavedData: "",
+            allowBlank: true,
+            fieldLabel: 'Description',
+            labelSeparator: '',
+            autoScroll: 'auto',
+            enableKeyEvents: true
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.CollectionDescriptionTextArea.superclass.initComponent.call(this)
+    }
+})
+
 SM.AccessLevelStrings = [
     'Undefined',
     'Restricted',
@@ -40,7 +57,7 @@ SM.AccessLevelStrings = [
 ]
 
 SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function() {
+    initComponent: function () {
         let me = this
         let config = {
             displayField: 'display',
@@ -54,7 +71,7 @@ SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
                     return true
                 }
                 if (v === "") { return "Blank values no allowed" }
-            }    
+            }
         }
         let data = [
             [1, SM.AccessLevelStrings[1]],
@@ -63,9 +80,9 @@ SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
             [4, SM.AccessLevelStrings[4]],
         ]
         this.store = new Ext.data.SimpleStore({
-            fields: ['value','display']
+            fields: ['value', 'display']
         })
-        this.store.on('load',function(store){
+        this.store.on('load', function (store) {
             me.setValue(store.getAt(0).get('value'))
         })
 
@@ -78,19 +95,19 @@ SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
 Ext.reg('sm-accesslevel-field', SM.AccessLevelField);
 
 SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
-    initComponent: function() {
+    initComponent: function () {
         const id = Ext.id()
-        let fields = ['key','value']
-        let newFields = ['key','value']
-        let fieldsConstructor = Ext.data.Record.create(fields) 
+        let fields = ['key', 'value']
+        let newFields = ['key', 'value']
+        let fieldsConstructor = Ext.data.Record.create(fields)
         this.newRecordConstructor = Ext.data.Record.create(newFields)
-        this.editor =  new Ext.ux.grid.RowEditor({
+        this.editor = new Ext.ux.grid.RowEditor({
             saveText: 'Save',
             grid: this,
             clicksToEdit: 2,
             errorSummary: false, // don't display errors during validation monitoring
             listeners: {
-                canceledit: function (editor,forced) {
+                canceledit: function (editor, forced) {
                     // The 'editing' property is set by RowEditorToolbar.js
                     if (editor.record.editing === true) { // was the edit on a new record?
                         this.grid.store.suspendEvents(false);
@@ -108,7 +125,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
 
                     delete mc.map[generatedId]
                     mc.map[record.id] = record
-                    for (let x=0,l=mc.keys.length; x<l; x++) {
+                    for (let x = 0, l = mc.keys.length; x < l; x++) {
                         if (mc.keys[x] === generatedId) {
                             mc.keys[x] = record.id
                         }
@@ -117,7 +134,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
             }
         })
-        this.totalTextCmp = new Ext.Toolbar.TextItem ({
+        this.totalTextCmp = new Ext.Toolbar.TextItem({
             text: '0 records',
             width: 80
         })
@@ -142,7 +159,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             listeners: {
             },
-            store: new Ext.data.ArrayStore ({
+            store: new Ext.data.ArrayStore({
                 grid: this,
                 writer: writer,
                 autoSave: false,
@@ -163,9 +180,9 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             view: new Ext.grid.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
-                forceFit:true
+                forceFit: true
             }),
-            sm: new Ext.grid.RowSelectionModel ({
+            sm: new Ext.grid.RowSelectionModel({
                 singleSelect: true,
                 listeners: {
                     selectionchange: function (sm) {
@@ -173,16 +190,16 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 }
             }),
-            cm: new Ext.grid.ColumnModel ({
+            cm: new Ext.grid.ColumnModel({
                 columns: [
                     {
-                        header: "Key", 
+                        header: "Key",
                         dataIndex: 'key',
                         sortable: true,
                         width: 150,
                         editor: new Ext.form.TextField({
                             grid: this,
-                            submitValue:false,
+                            submitValue: false,
                             validator: function (v) {
                                 // Don't keep the form from validating when I'm not active
                                 if (this.grid.editor.editing == false) {
@@ -190,7 +207,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                                 }
                                 if (v === "") { return "Blank values no allowed" }
                                 // Is there an item in the store like me?
-                                let searchIdx = this.grid.store.findExact('key',v)
+                                let searchIdx = this.grid.store.findExact('key', v)
                                 // Is it me?
                                 let isMe = this.grid.selModel.isSelected(searchIdx)
                                 if (searchIdx == -1 || isMe) {
@@ -202,33 +219,33 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                         })
                     },
                     {
-                        header: "Value", 
+                        header: "Value",
                         dataIndex: 'value',
                         sortable: false,
                         width: 250,
                         editor: new Ext.form.TextField({
-                            submitValue:false
+                            submitValue: false
                         })
                     }
-                ]   
+                ]
             }),
             bbar: bbar,
-            getValue: function() {
+            getValue: function () {
                 let value = {}
                 this.store.data.items.forEach((i) => {
                     value[i.data.key] = i.data.value
                 })
                 return value
             },
-            markInvalid: function() {},
-            clearInvalid: function() {},
-            isValid: function() { 
+            markInvalid: function () { },
+            clearInvalid: function () { },
+            isValid: function () {
                 return true
             },
             disabled: false,
-            getName: function() {return this.name},
-            validate: function() { return true},
-            setValue: function(v) {
+            getName: function () { return this.name },
+            validate: function () { return true },
+            setValue: function (v) {
                 this.store.loadData(Object.entries(v))
             }
         }
@@ -238,15 +255,16 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 Ext.reg('sm-metadata-grid', SM.MetadataGrid)
 
-SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
-    initComponent: function() {
+SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
         let me = this
         const userStore = new Ext.data.JsonStore({
             fields: [
-                {	name:'userId',
+                {
+                    name: 'userId',
                     type: 'string'
-                },{
-                    name:'username',
+                }, {
+                    name: 'username',
                     type: 'string'
                 }
             ],
@@ -266,8 +284,8 @@ SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
             valueField: 'userId',
             mode: 'local',
             forceSelection: true,
-			typeAhead: true,
-			minChars: 0,
+            typeAhead: true,
+            minChars: 0,
             hideTrigger: false,
             triggerAction: 'all',
             lastQuery: '',
@@ -277,42 +295,42 @@ SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
                     return true
                 }
                 if (v === "") { return "Blank values no allowed" }
-            },    
-			doQuery : function(q, forceAll){
-				q = Ext.isEmpty(q) ? '' : q;
-				var qe = {
-					query: q,
-					forceAll: forceAll,
-					combo: this,
-					cancel:false
-				};
-				if(this.fireEvent('beforequery', qe)===false || qe.cancel){
-					return false;
-				}
-				q = qe.query;
-				forceAll = qe.forceAll;
-				if(forceAll === true || (q.length >= this.minChars)){
-					if(this.lastQuery !== q){
-						this.lastQuery = q;
-						if(this.mode == 'local'){
-							this.selectedIndex = -1;
-							if(forceAll){
-								this.store.clearFilter();
-							}else{
-								this.store.filter(this.displayField, q, false, false);
-							}
-							this.onLoad();
-						}else{
-							this.store.baseParams[this.queryParam] = q;
-							this.store.load({
-								params: this.getParams(q)
-							});
-							this.expand();
-						}
-					}else{
-						this.selectedIndex = -1;
-						this.onLoad();
-					}
+            },
+            doQuery: function (q, forceAll) {
+                q = Ext.isEmpty(q) ? '' : q;
+                var qe = {
+                    query: q,
+                    forceAll: forceAll,
+                    combo: this,
+                    cancel: false
+                };
+                if (this.fireEvent('beforequery', qe) === false || qe.cancel) {
+                    return false;
+                }
+                q = qe.query;
+                forceAll = qe.forceAll;
+                if (forceAll === true || (q.length >= this.minChars)) {
+                    if (this.lastQuery !== q) {
+                        this.lastQuery = q;
+                        if (this.mode == 'local') {
+                            this.selectedIndex = -1;
+                            if (forceAll) {
+                                this.store.clearFilter();
+                            } else {
+                                this.store.filter(this.displayField, q, false, false);
+                            }
+                            this.onLoad();
+                        } else {
+                            this.store.baseParams[this.queryParam] = q;
+                            this.store.load({
+                                params: this.getParams(q)
+                            });
+                            this.expand();
+                        }
+                    } else {
+                        this.selectedIndex = -1;
+                        this.onLoad();
+                    }
                 }
             },
             listeners: {
@@ -328,7 +346,7 @@ SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
                         )
                     }
                 }
-            }       
+            }
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.UserSelectionField.superclass.initComponent.call(this)
@@ -337,10 +355,10 @@ SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
 Ext.reg('sm-user-selection-field', SM.UserSelectionField);
 
 SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
-    initComponent: function() {
+    initComponent: function () {
         const me = this
         const newFields = [
-            { 
+            {
                 name: 'userId'
             },
             {
@@ -351,7 +369,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         ]
         this.newRecordConstructor = Ext.data.Record.create(newFields)
-        const totalTextCmp = new Ext.Toolbar.TextItem ({
+        const totalTextCmp = new Ext.Toolbar.TextItem({
             text: '0 records',
             width: 80
         })
@@ -360,7 +378,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             url: this.url,
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             listeners: {
-                exception: function ( proxy, type, action, options, response, arg ) {
+                exception: function (proxy, type, action, options, response, arg) {
                     let message
                     if (response.responseText) {
                         message = response.responseText
@@ -383,10 +401,10 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             },
             listeners: {
-                load: function (store,records) {
+                load: function (store, records) {
                     totalTextCmp.setText(records.length + ' records');
                 },
-                remove: function (store,record,index) {
+                remove: function (store, record, index) {
                     totalTextCmp.setText(store.getCount() + ' records');
                     store.grid.fireEvent('grantschanged', store.grid)
                 }
@@ -402,23 +420,23 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this
         })
         const columns = [
-            { 	
-				header: "Username",
-				width: 150,
+            {
+                header: "Username",
+                width: 150,
                 dataIndex: 'username',
                 sortable: true,
                 editor: userSelectionField
             },
-            { 	
-				header: "Access Level",
-				width: 100,
+            {
+                header: "Access Level",
+                width: 100,
                 dataIndex: 'accessLevel',
                 sortable: true,
                 renderer: (v) => SM.AccessLevelStrings[v],
                 editor: accessLevelField
             }
         ]
-        this.editor =  new Ext.ux.grid.RowEditor({
+        this.editor = new Ext.ux.grid.RowEditor({
             saveText: 'Save',
             grid: this,
             userSelectionField: userSelectionField,
@@ -430,12 +448,12 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                     // RowEditor unhelpfully sets changes.username to the userId value. 
                     if (changes.hasOwnProperty('username')) {
                         let userEditor = editor.userSelectionField
-                        let userRecord = userEditor.store.getAt(userEditor.selectedIndex) 
+                        let userRecord = userEditor.store.getAt(userEditor.selectedIndex)
                         changes.username = userRecord.data.username
                         changes.userId = userRecord.data.userId
                     }
                 },
-                canceledit: function (editor,forced) {
+                canceledit: function (editor, forced) {
                     // The 'editing' property is set by RowEditorToolbar.js
                     if (editor.record.editing === true) { // was the edit on a new record?
                         this.grid.store.suspendEvents(false);
@@ -454,7 +472,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                     record.dirty = false
                     delete mc.map[generatedId]
                     mc.map[record.id] = record
-                    for (let x=0,l=mc.keys.length; x<l; x++) {
+                    for (let x = 0, l = mc.keys.length; x < l; x++) {
                         if (mc.keys[x] === generatedId) {
                             mc.keys[x] = record.id
                         }
@@ -480,14 +498,14 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 iconCls: 'sm-asset-icon',
                 disabled: true,
                 text: 'User access...',
-                handler: function() {
+                handler: function () {
                     var r = me.getSelectionModel().getSelected();
                     Ext.getBody().mask('Getting access list for ' + r.get('username') + '...');
                     showUserAccess(me.collectionId, r.get('userId'));
                 }
-            })    
+            })
         }
-        
+
         const config = {
             //title: this.title || 'Parent',
             isFormField: true,
@@ -497,8 +515,8 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             height: 150,
             plugins: [this.editor],
             store: grantStore,
-            cm: new Ext.grid.ColumnModel ({
-                columns: columns   
+            cm: new Ext.grid.ColumnModel({
+                columns: columns
             }),
             sm: new Ext.grid.RowSelectionModel({
                 singleSelect: true,
@@ -523,7 +541,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             tbar: tbar,
 
-            getValue: function() {
+            getValue: function () {
                 let grants = []
                 grantStore.data.items.forEach((i) => {
                     grants.push({
@@ -533,8 +551,8 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 })
                 return grants
             },
-            setValue: function(v) {
-                const data = v.map( (g) => ({
+            setValue: function (v) {
+                const data = v.map((g) => ({
                     userId: g.user.userId,
                     username: g.user.username,
                     accessLevel: g.accessLevel
@@ -544,15 +562,15 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             validator: function (v) {
                 let one = 1
             },
-            markInvalid: function() {
+            markInvalid: function () {
                 let one = 1
             },
-            clearInvalid: function() {
+            clearInvalid: function () {
                 let one = 1
             },
             isValid: function () {
                 const value = me.getValue()
-                const owners = value.filter( g => g.accessLevel === 4)
+                const owners = value.filter(g => g.accessLevel === 4)
                 return owners.length > 0
             },
             getName: () => this.name,
@@ -568,10 +586,10 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
 Ext.reg('sm-user-grants-grid', SM.UserGrantsGrid);
 
 SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
-    initComponent: function() {
+    initComponent: function () {
         let config = {
             baseCls: 'x-plain',
-            bodyStyle:'padding:10px 10px 10px 10px;',
+            bodyStyle: 'padding:10px 10px 10px 10px;',
             border: false,
             labelWidth: 100,
             monitorValid: true,
@@ -579,13 +597,13 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
                 // Override Ext.form.FormPanel implementation to check submitValue
                 // and to create metadata from the review fields configuration
                 let o = {}, n, key, val;
-                this.items.each(function(f) {
+                this.items.each(function (f) {
                     if (f.submitValue !== false && !f.disabled && (dirtyOnly !== true || f.isDirty())) {
                         n = f.getName()
                         key = o[n]
-                        val = f.getValue()   
-                        if (Ext.isDefined(key)){
-                            if (Ext.isArray(key)){
+                        val = f.getValue()
+                        if (Ext.isDefined(key)) {
+                            if (Ext.isArray(key)) {
                                 o[n].push(val);
                             } else {
                                 o[n] = [key, val]
@@ -621,7 +639,7 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
                             fieldLabel: 'Name',
                             name: 'name',
                             allowBlank: false,
-                            anchor:'100%'  // anchor width by percentage
+                            anchor: '100%'  // anchor width by percentage
                         },
                         // {
                         //     xtype: 'sm-workflow-combo',
@@ -658,7 +676,7 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
             buttons: [{
                 text: this.btnText || 'Save',
                 formBind: true,
-                handler: this.btnHandler || function () {}
+                handler: this.btnHandler || function () { }
             }]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -667,21 +685,21 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
 })
 
 SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
-// SM.CollectionPanel = Ext.extend(Ext.Panel, {
-    initComponent: function() {
+    // SM.CollectionPanel = Ext.extend(Ext.Panel, {
+    initComponent: function () {
         let me = this
-        async function putMetadataValue (key, value) {
+        async function putMetadataValue(key, value) {
             const result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/metadata/keys/${key}`,
-              method: 'PUT',
-              jsonData: JSON.stringify(value)
+                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/metadata/keys/${key}`,
+                method: 'PUT',
+                jsonData: JSON.stringify(value)
             })
             return result.response.responseText ? JSON.parse(result.response.responseText) : ""
         }
-        async function getMetadataValue (key) {
+        async function getMetadataValue(key) {
             const result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/metadata/keys/${key}`,
-              method: 'GET'
+                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/metadata/keys/${key}`,
+                method: 'GET'
             })
             return result.response.responseText ? JSON.parse(result.response.responseText) : null
         }
@@ -691,12 +709,12 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             value: me.apiCollection?.name,
             name: 'name',
             allowBlank: false,
-            anchor:'100%',
+            anchor: '100%',
             enableKeyEvents: true,
             keys: [
-                { 
+                {
                     key: Ext.EventObject.ENTER,
-                    fn: (a , b, c) => {
+                    fn: (a, b, c) => {
                         let one = a
                         nameField.getEl().blur()
                     }
@@ -726,11 +744,11 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                         // alert (result.response.responseText)
                     }
                     catch (e) {
-                        alert ("Name update failed")
+                        alert("Name update failed")
                         field.setValue(oldValue)
                     }
                 }
-            }            
+            }
         })
         let delButton = new Ext.Button({
             iconCls: 'icon-del',
@@ -739,8 +757,8 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             border: false,
             handler: async function () {
                 try {
-                    var confirmStr="Deleting this Collection will <b>permanently remove</b> all data associated with the Collection. This includes all Assets and their associated assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the Collection?";
-                    Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
+                    var confirmStr = "Deleting this Collection will <b>permanently remove</b> all data associated with the Collection. This includes all Assets and their associated assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the Collection?";
+                    Ext.Msg.confirm("Confirm", confirmStr, async function (btn, text) {
                         if (btn == 'yes') {
                             let result = await Ext.Ajax.requestPromise({
                                 url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
@@ -778,10 +796,10 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                         })
                     }
                     catch (e) {
-                        alert ("Workflow update failed")
+                        alert("Workflow update failed")
                     }
                 }
-            }            
+            }
         })
         let metadataGrid = new SM.MetadataGrid({
             fieldLabel: 'Metadata',
@@ -802,7 +820,7 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                         grid.setValue(collection.metadata)
                     }
                     catch (e) {
-                        alert ('Metadata save failed')
+                        alert('Metadata save failed')
                     }
                 }
             }
@@ -828,7 +846,7 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 }
             }
         })
-      
+
         let firstItem = nameField
         if (this.allowDelete) {
             nameField.flex = 1
@@ -847,13 +865,13 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             getFieldValues: function (dirtyOnly) {
                 // Override Ext.form.FormPanel implementation to check submitValue
                 let o = {}, n, key, val;
-                this.items.each(function(f) {
+                this.items.each(function (f) {
                     if (f.submitValue !== false && !f.disabled && (dirtyOnly !== true || f.isDirty())) {
                         n = f.getName()
                         key = o[n]
-                        val = f.getValue()   
-                        if (Ext.isDefined(key)){
-                            if (Ext.isArray(key)){
+                        val = f.getValue()
+                        if (Ext.isDefined(key)) {
+                            if (Ext.isArray(key)) {
                                 o[n].push(val);
                             } else {
                                 o[n] = [key, val]
@@ -882,23 +900,23 @@ Ext.reg('sm-collection-panel', SM.CollectionPanel);
 Ext.ns('SM.FieldSettings')
 
 SM.FieldSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function() {
+    initComponent: function () {
         let config = {
             displayField: 'display',
             valueField: 'value',
             triggerAction: 'all',
             mode: 'local',
-            editable: false      
+            editable: false
         }
         let me = this
         let data = [
             ['always', 'Always'],
-            ['findings','Findings only']
+            ['findings', 'Findings only']
         ]
         this.store = new Ext.data.SimpleStore({
-            fields: ['value','display']
+            fields: ['value', 'display']
         })
-        this.store.on('load',function(store){
+        this.store.on('load', function (store) {
             me.setValue(me.value)
         })
 
@@ -911,29 +929,29 @@ SM.FieldSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, {
 Ext.reg('sm-field-active-combo', SM.FieldSettings.FieldActiveComboBox)
 
 SM.FieldSettings.FieldRequiredComboBox = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function() {
+    initComponent: function () {
         let _this = this
         let config = {
             displayField: 'display',
             valueField: 'value',
             triggerAction: 'all',
             mode: 'local',
-            editable: false      
+            editable: false
         }
         let me = this
         let dataAlways = [
             ['always', 'Always'],
-            ['findings','Findings only'],
+            ['findings', 'Findings only'],
             ['optional', 'Optional']
         ]
         let dataFails = [
-            ['findings','Findings only'],
+            ['findings', 'Findings only'],
             ['optional', 'Optional']
         ]
         this.store = new Ext.data.SimpleStore({
-            fields: ['value','display']
+            fields: ['value', 'display']
         })
-        this.store.on('load',function(store){
+        this.store.on('load', function (store) {
             me.setValue(me.value)
         })
 
@@ -1033,7 +1051,7 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
             commentRequiredCombo.setValue(values.commentRequired)
         }
 
-        function onSelect (item, record, index) {
+        function onSelect(item, record, index) {
             if (item.name === 'detailEnabled' || item.name === 'commentEnabled') {
                 item.requiredField.setListByEnabledValue(item.value)
             }
@@ -1066,7 +1084,7 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                                     value: 'Detail',
                                     height: 22
                                 },
-                                
+
                                 {
                                     xtype: 'displayfield',
                                     submitValue: false,
@@ -1077,7 +1095,7 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                         },
                         {
                             columnWidth: .33,
-							border: false,
+                            border: false,
                             hideLabels: true,
                             layout: 'form',
                             items: [
@@ -1094,7 +1112,7 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                             columnWidth: .33,
                             layout: 'form',
                             hideLabels: true,
-							border: false,
+                            border: false,
                             items: [
                                 {
                                     xtype: 'displayfield',
@@ -1115,4 +1133,12 @@ SM.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
 })
 Ext.reg('sm-collection-settings-review-fields', SM.FieldSettings.ReviewFields)
 
+SM.StatusSettings.AcceptCheckbox = Ext.extend(Ext.form.Checkbox, {
+    initComponent: function () {
+        const _this = this
+        const config = {}
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.StatusSettings.AcceptCheckbox.superclass.initComponent.call(this)
+    }
+})
 
