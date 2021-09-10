@@ -1016,43 +1016,6 @@ async function addReview( params ) {
   // END History Panel
   /******************************************************/
 
-  /******************************************************/
-  // START Metadata Panel
-  /******************************************************/
-  const metadataGrid = new SM.MetadataGrid({
-    title: 'Metadata',
-    curReview: {
-      collectionId: leaf.collectionId,
-      assetId: leaf.assetId,
-      ruleId: null
-    },
-    id: 'metadataGrid' + idAppend,
-    anchor: '100%',
-    listeners: {
-        metadatachanged: async grid => {
-            try {
-                let data = grid.getValue()
-                console.log(data)
-                let result = await Ext.Ajax.requestPromise({
-                    url: `${STIGMAN.Env.apiBase}/collections/${grid.curReview.collectionId}/reviews/${grid.curReview.assetId}/${grid.curReview.ruleId}?projection=metadata`,
-                    method: 'PATCH',
-                    jsonData: {
-                        metadata: data
-                    }
-                })
-                let collection = JSON.parse(result.response.responseText)
-                grid.setValue(collection.metadata)
-            }
-            catch (e) {
-                alert ('Metadata save failed')
-            }
-        }
-    }
-  })
-  /******************************************************/
-  // END Metadata Panel
-  /******************************************************/
-
   var resourcesPanel = new Ext.Panel({
     cls: 'sm-round-panel',
     margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
@@ -1091,8 +1054,7 @@ async function addReview( params ) {
           layout: 'fit',
           id: 'history-tab' + idAppend,
           items: historyData.grid
-        },
-        // metadataGrid
+        }
       ]
     }]
   });
@@ -1185,9 +1147,7 @@ async function addReview( params ) {
       // load others
       Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
   
-      // Log, Feedback and Metadata
-      const metadataGrid = Ext.getCmp('metadataGrid' + idAppend)
-      metadataGrid.curReview.ruleId = groupGridRecord.data.ruleId
+      // Log, Feedback 
   
       let historyMetaReq = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
@@ -1199,7 +1159,6 @@ async function addReview( params ) {
       let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
       if (! reviewProjected) {
         Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
-        Ext.getCmp('metadataGrid' + idAppend).getStore().removeAll()
         Ext.getCmp('attachmentsGrid' + idAppend).getStore().removeAll()
       }
       if (reviewProjected.history) {
@@ -1218,9 +1177,6 @@ async function addReview( params ) {
         }
         reviewProjected.history.push(currentReview)
         Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewProjected.history)
-      }
-      if (reviewProjected.metadata) {
-        metadataGrid.setValue(reviewProjected.metadata)
       }
       // Feedback
       Ext.getCmp(`feedback-tab${idAppend}`).update(reviewProjected.rejectText)

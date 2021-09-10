@@ -1031,12 +1031,9 @@ async function addCollectionReview ( params ) {
 				listeners: {
 					rowselect: function(sm,index,record) {
 						if (sm.getCount() == 1) { //single row selected
-							metadataGrid.enable();
 							historyData.grid.enable();
 							loadResources(record);
 						} else {
-							metadataGrid.getStore().removeAll();
-							metadataGrid.disable();
 							historyData.store.removeAll();
 							historyData.grid.disable();
 							setRejectButtonState();
@@ -1046,12 +1043,9 @@ async function addCollectionReview ( params ) {
 					rowdeselect: function(sm,index,deselectedRecord) {
 						if (sm.getCount() == 1) { //single row selected
 							selectedRecord = sm.getSelected();
-							metadataGrid.enable();
 							historyData.grid.enable();
 							loadResources(selectedRecord);
 						} else {
-							metadataGrid.getStore().removeAll();
-							metadataGrid.disable();
 							historyData.store.removeAll();
 							historyData.grid.disable();
 							setRejectButtonState();
@@ -1570,46 +1564,7 @@ async function addCollectionReview ( params ) {
 	// END Resources Panel/History
 	/******************************************************/
 
-	/******************************************************/
-	// START Resources Panel/Metadata
-	/******************************************************/
-
-  const metadataGrid = new SM.MetadataGrid({
-    title: 'Metadata',
-    curReview: {
-      collectionId: leaf.collectionId,
-      assetId: leaf.assetId,
-      ruleId: null
-    },
-    id: 'metadataGrid' + idAppend,
-    anchor: '100%',
-    listeners: {
-        metadatachanged: async grid => {
-            try {
-                let data = grid.getValue()
-                console.log(data)
-                let result = await Ext.Ajax.requestPromise({
-                    url: `${STIGMAN.Env.apiBase}/collections/${grid.curReview.collectionId}/reviews/${grid.curReview.assetId}/${grid.curReview.ruleId}?projection=metadata`,
-                    method: 'PATCH',
-                    jsonData: {
-                        metadata: data
-                    }
-                })
-                let collection = JSON.parse(result.response.responseText)
-                grid.setValue(collection.metadata)
-            }
-            catch (e) {
-                alert ('Metadata save failed')
-            }
-        }
-    }
-  })
-		
-	/******************************************************/
-	// END Resources Panel/Metadata
-	/******************************************************/
-
-	  /******************************************************/
+  /******************************************************/
   // START Attachments Panel
   /******************************************************/
   const attachmentsGrid = new SM.Attachments.Grid({
@@ -1797,12 +1752,6 @@ async function addCollectionReview ( params ) {
 							layout: 'fit',
 							items: attachmentsGrid
 						},
-						// {
-						// 	title: 'Metadata',
-						// 	id: 'metadata-panel' + idAppend,
-						// 	layout: 'fit',
-						// 	items: metadataGrid
-						// },
 						{
 							title: 'Log',
 							layout: 'fit',

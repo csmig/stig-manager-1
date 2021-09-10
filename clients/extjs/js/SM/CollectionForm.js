@@ -642,20 +642,6 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                             allowBlank: false,
                             anchor: '100%'  // anchor width by percentage
                         },
-                        // {
-                        //     xtype: 'sm-workflow-combo',
-                        //     fieldLabel: 'Workflow',
-                        //     name: 'workflow',
-                        //     margins: '0 10 0 0',
-                        //     width: 200,
-                        //     value: 'emass'
-                        // },
-                        // {
-                        //     xtype: 'sm-metadata-grid',
-                        //     fieldLabel: 'Metadata',
-                        //     name: 'metadata',
-                        //     anchor: '100%'
-                        // },
                         {
                             xtype: 'sm-collection-settings-review-fields',
                             anchor: '100%'
@@ -707,6 +693,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
 
         let nameField = new Ext.form.TextField({
             fieldLabel: 'Name',
+            labelStyle: 'font-weight: 600;',
             value: me.apiCollection?.name,
             name: 'name',
             allowBlank: false,
@@ -722,6 +709,12 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 }
             ],
             listeners: {
+                focus: function (field) {
+                    field.addClass('sm-field-focus')
+                },
+                blur: function (field) {
+                    field.removeClass('sm-field-focus')
+                },
                 specialkey: (field, e) => {
                     if (e.getKey() == e.ENTER) {
                         field.getEl().blur()
@@ -751,6 +744,22 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 }
             }
         })
+        let descriptionField = new Ext.form.TextArea({
+            fieldLabel: 'Description',
+            labelStyle: 'font-weight: 600;',
+            value: me.apiCollection?.description,
+            name: 'description',
+            anchor: '100% -150',
+            listeners: {
+                focus: function (field) {
+                    field.addClass('sm-field-focus')
+                },
+                blur: function (field) {
+                    field.removeClass('sm-field-focus')
+                }
+            }
+          })
+          
         let delButton = new Ext.Button({
             iconCls: 'icon-del',
             // cls: 'sm-bare-button',
@@ -774,58 +783,6 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     alert(e.mes)
                 }
             }
-        })
-        let workflowCombo = new SM.WorkflowComboBox({
-            fieldLabel: 'Workflow',
-            value: me.apiCollection?.workflow,
-            name: 'workflow',
-            margins: '0 10 0 0',
-            width: 200,
-            listeners: {
-                select: async (combo, record, index) => {
-                    try {
-                        let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
-                            method: 'PATCH',
-                            jsonData: {
-                                workflow: record.data.value
-                            }
-                        })
-                        SM.Dispatcher.fireEvent('collectionchanged', {
-                            collectionId: me.collectionId,
-                            workflow: record.data.value
-                        })
-                    }
-                    catch (e) {
-                        alert("Workflow update failed")
-                    }
-                }
-            }
-        })
-        let metadataGrid = new SM.MetadataGrid({
-            fieldLabel: 'Metadata',
-            name: 'metadata',
-            anchor: '100%, -56',
-            listeners: {
-                metadatachanged: async grid => {
-                    try {
-                        let data = grid.getValue()
-                        let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
-                            method: 'PATCH',
-                            jsonData: {
-                                metadata: data
-                            }
-                        })
-                        let collection = JSON.parse(result.response.responseText)
-                        grid.setValue(collection.metadata)
-                    }
-                    catch (e) {
-                        alert('Metadata save failed')
-                    }
-                }
-            }
-
         })
         let settingsReviewFields = new SM.Collection.FieldSettings.ReviewFields({
             fieldSettings: JSON.parse(me.apiCollection?.metadata?.fieldSettings ?? null),
@@ -853,6 +810,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             nameField.flex = 1
             firstItem = {
                 xtype: 'compositefield',
+                labelStyle: 'font-weight: 600;',
                 items: [
                     nameField,
                     delButton
@@ -886,8 +844,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             },
             items: [
                 firstItem,
-                // workflowCombo,
-                // metadataGrid,
+                descriptionField,
                 settingsReviewFields
             ]
         }
@@ -1077,7 +1034,7 @@ SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                                 {
                                     xtype: 'displayfield',
                                     submitValue: false,
-                                    value: '<b>Field</b>'
+                                    value: '<span style="font-weight: 600;">Field</span>'
                                 },
                                 {
                                     xtype: 'displayfield',
@@ -1103,7 +1060,7 @@ SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                                 {
                                     xtype: 'displayfield',
                                     submitValue: false,
-                                    value: '<b>Enabled</b>'
+                                    value: '<span style="font-weight: 600;">Enabled</span>'
                                 },
                                 detailEnabledCombo,
                                 commentEnabledCombo
@@ -1118,7 +1075,7 @@ SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
                                 {
                                     xtype: 'displayfield',
                                     submitValue: false,
-                                    value: '<b>Required to submit</b>'
+                                    value: '<span style="font-weight: 600;">Required to submit</span>'
                                 },
                                 detailRequiredCombo,
                                 commentRequiredCombo,

@@ -1,3 +1,7 @@
+.x-form-text.sm-field-focus, .x-form-textarea.sm-field-focus {
+	background-color: #fff9de;
+	border-color: black
+}
 .sm-review-auto-sprite {
 	color: #fcfcfc !important;
 	font: bold 9px Open Sans,helvetica, sans-serif;
