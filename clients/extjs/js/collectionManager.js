@@ -30,7 +30,7 @@ async function addCollectionManager( params ) {
 			split: true,
 			layout: 'fit',
 			allowDelete: collectionGrant.accessLevel === 4,
-			height: 300
+			height: 420
 		})
 		let grantGrid = new SM.UserGrantsGrid({
 			collectionId: collectionId,
