@@ -886,6 +886,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
  }
  .sm-setting-icon {
  background-image: url(../img/gear.svg) !important;
+ background-size: 16px 16px;
 }
 .sm-export-icon {
  background-image: url(../img/download.svg);

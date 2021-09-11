@@ -140,14 +140,14 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             width: 80
         })
         let writer = new Ext.data.DataWriter()
-        let bbar = new SM.RowEditorToolbar({
+        let tbar = new SM.RowEditorToolbar({
             itemString: 'key',
             editor: this.editor,
             gridId: this.id,
             deleteProperty: 'key',
             newRecord: this.newRecordConstructor
         })
-        bbar.delButton.disable()
+        tbar.delButton.disable()
         let config = {
             //title: this.title || 'Parent',
             isFormField: true,
@@ -188,7 +188,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                 singleSelect: true,
                 listeners: {
                     selectionchange: function (sm) {
-                        bbar.delButton.setDisabled(!sm.hasSelection())
+                        tbar.delButton.setDisabled(!sm.hasSelection())
                     }
                 }
             }),
@@ -231,7 +231,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 ]
             }),
-            bbar: bbar,
+            tbar: tbar,
             getValue: function () {
                 let value = {}
                 this.store.data.items.forEach((i) => {
@@ -786,9 +786,12 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             }
         })
         const metadataGrid = new SM.MetadataGrid({
-            fieldLabel: 'Metadata',
+            title: 'Metadata',
+            iconCls: 'sm-database-save-icon',
             name: 'metadata',
-            anchor: '100%',
+            filteredKeys: ['fieldSettings'],
+            anchor: '100% 0',
+            border: true,
             listeners: {
                 metadatachanged: async grid => {
                     try {
@@ -798,8 +801,10 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                             method: 'PATCH',
                             jsonData: data
                         })
-                        let collection = JSON.parse(result.response.responseText)
-                        grid.setValue(collection.metadata)
+                        // let collection = JSON.parse(result.response.responseText)
+                        // grid.setValue(collection.metadata)
+                        const sortstate = grid.store.getSortState()
+                        grid.store.sort([sortstate])
                     }
                     catch (e) {
                         alert ('Metadata save failed')
@@ -811,8 +816,9 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
         metadataGrid.setValue(_this.apiCollection.metadata)
 
         const settingsReviewFields = new SM.Collection.FieldSettings.ReviewFields({
+            iconCls: 'sm-stig-icon',
             fieldSettings: JSON.parse(_this.apiCollection?.metadata?.fieldSettings ?? null),
-            collapsible: true,
+            border: true,
             autoHeight: true,
             onFieldSelect: async function (fieldset) {
                 try {
@@ -845,6 +851,43 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 ]
             }
         }
+
+        const grantGrid = new SM.UserGrantsGrid({
+			collectionId: _this.apiCollection.collectionId,
+            iconCls: 'sm-users-icon',
+			showAccessBtn: true,
+			url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}`,
+			baseParams: {
+				projection: 'grants'
+			},
+			title: 'Grants',
+			border: true,
+			listeners: {
+				grantschanged: async grid => {
+                    try {
+                        let data = grid.getValue()
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}?projection=grants`,
+                            method: 'PATCH',
+                            jsonData: {
+                                grants: data
+                            }
+                        })
+                        let collection = JSON.parse(result.response.responseText)
+                        grid.setValue(collection.grants)
+                    }
+                    catch (e) {
+                        alert ('Grants save failed')
+                    }
+				}
+			}
+		})
+		grantGrid.getStore().loadData(_this.apiCollection.grants.map( g => ({
+			userId: g.user.userId,
+			username: g.user.username,
+			accessLevel: g.accessLevel
+		})))
+
         let config = {
             title: this.title || 'Collection properties',
             layout: 'form',
@@ -871,10 +914,34 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 return o
             },
             items: [
-                firstItem,
-                descriptionField,
-                metadataGrid,
-                settingsReviewFields
+                {
+                    xtype: 'fieldset',
+                    title: 'Information',
+                    items: [firstItem, descriptionField]
+                },
+                {
+                    xtype: 'tabpanel',
+                    deferredRender: false, // needed for RowEditor.stopEditing() unmask
+                    activeTab: 0,
+                    anchor: '100% -148',
+                    border: false,
+                    items: [ 
+                        grantGrid,
+                        metadataGrid,
+                        {
+                            xtype: 'panel',
+                            title: 'Settings',
+                            layout: 'form',
+                            iconCls: 'sm-setting-icon',
+                            border: true,
+                            padding: 10,
+                            items: [
+                                settingsReviewFields
+                            ]
+                        }
+                    ]      
+                }
+                
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))

@@ -23,8 +23,14 @@ async function addCollectionManager( params ) {
 			apiCollection: apiCollection,
 			title: `Collection Properties (ID ${collectionId})`,
 			cls: 'sm-round-panel',
-			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
-			region: 'north',
+			// margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
+			// region: 'north',
+			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+			region: 'west',
+			width: '30%',
+			minWidth: 330,
+			split: true,
+			border: false,
 			padding: '10px 10px 10px 10px',
 			border: false,
 			split: true,
@@ -32,39 +38,39 @@ async function addCollectionManager( params ) {
 			allowDelete: collectionGrant.accessLevel === 4,
 			height: 420
 		})
-		let grantGrid = new SM.UserGrantsGrid({
-			collectionId: collectionId,
-			showAccessBtn: true,
-			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
-			baseParams: {
-				elevate: curUser.privileges.canAdmin,
-				projection: 'grants'
-			},
-			title: 'Grants',
-			cls: 'sm-round-panel',
-			margins: { top: SM.Margin.adjacent, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
-			border: false,
-			region: 'center',
-			listeners: {
-				grantschanged: async grid => {
-                    try {
-                        let data = grid.getValue()
-                        let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}?projection=grants`,
-                            method: 'PATCH',
-                            jsonData: {
-                                grants: data
-                            }
-                        })
-                        let collection = JSON.parse(result.response.responseText)
-                        grid.setValue(collection.grants)
-                    }
-                    catch (e) {
-                        alert ('Grants save failed')
-                    }
-				}
-			}
-		})
+		// let grantGrid = new SM.UserGrantsGrid({
+		// 	collectionId: collectionId,
+		// 	showAccessBtn: true,
+		// 	url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
+		// 	baseParams: {
+		// 		elevate: curUser.privileges.canAdmin,
+		// 		projection: 'grants'
+		// 	},
+		// 	title: 'Grants',
+		// 	cls: 'sm-round-panel',
+		// 	margins: { top: SM.Margin.adjacent, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+		// 	border: false,
+		// 	region: 'center',
+		// 	listeners: {
+		// 		grantschanged: async grid => {
+    //                 try {
+    //                     let data = grid.getValue()
+    //                     let result = await Ext.Ajax.requestPromise({
+    //                         url: `${STIGMAN.Env.apiBase}/collections/${collectionId}?projection=grants`,
+    //                         method: 'PATCH',
+    //                         jsonData: {
+    //                             grants: data
+    //                         }
+    //                     })
+    //                     let collection = JSON.parse(result.response.responseText)
+    //                     grid.setValue(collection.grants)
+    //                 }
+    //                 catch (e) {
+    //                     alert ('Grants save failed')
+    //                 }
+		// 		}
+		// 	}
+		// })
 		let assetGrid = new SM.CollectionAssetGrid({
 			collectionId: collectionId,
 			collectionName: collectionName,
@@ -108,21 +114,22 @@ async function addCollectionManager( params ) {
 				}
 			},
 			items: [
-				{
-					region: 'west',
-					width: '30%',
-					minWidth: 330,
-					split: true,
-					border: false,
-					layout: 'border',
-					layoutConfig: {
-						targetCls: 'sm-border-layout-ct'
-					},
-					items: [
-						collectionPanel,
-						grantGrid 
-					]
-				},
+				// {
+				// 	region: 'west',
+				// 	width: '30%',
+				// 	minWidth: 330,
+				// 	split: true,
+				// 	border: false,
+				// 	layout: 'border',
+				// 	layoutConfig: {
+				// 		targetCls: 'sm-border-layout-ct'
+				// 	},
+				// 	items: [
+				// 		collectionPanel,
+				// 		grantGrid 
+				// 	]
+				// },
+				collectionPanel,
 				{
 					region: 'center',
 					layout: 'border',
@@ -172,11 +179,11 @@ async function addCollectionManager( params ) {
 		thisTab.updateTitle.call(thisTab)
 		thisTab.show();
 		
-		grantGrid.getStore().loadData(apiCollection.grants.map( g => ({
-			userId: g.user.userId,
-			username: g.user.username,
-			accessLevel: g.accessLevel
-		})))
+		// grantGrid.getStore().loadData(apiCollection.grants.map( g => ({
+		// 	userId: g.user.userId,
+		// 	username: g.user.username,
+		// 	accessLevel: g.accessLevel
+		// })))
 		assetGrid.getStore().load()
 		stigGrid.getStore().load()
 		SM.Dispatcher.addListener('assetchanged', onAssetEvent)
