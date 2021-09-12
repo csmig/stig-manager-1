@@ -152,7 +152,7 @@ async function addCollectionManager( params ) {
 			}
 		}
 		let onStigAssetsChanged = (eCollectionId) => {
-			if (e.collectionId === collectionId) {
+			if (eCollectionId === collectionId) {
 				assetGrid.getStore().reload()
 				stigGrid.getStore().reload()
 			}
