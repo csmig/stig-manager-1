@@ -794,6 +794,21 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 },
                 blur: function (field) {
                     field.removeClass('sm-field-focus')
+                },
+                change: async (field, newValue, oldValue) => {
+                    try {
+                        await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
+                            method: 'PATCH',
+                            jsonData: {
+                                description: newValue.trim()
+                            }
+                        })
+                    }
+                    catch (e) {
+                        alert("Description update failed")
+                        field.setValue(oldValue)
+                    }
                 }
             }
         })
