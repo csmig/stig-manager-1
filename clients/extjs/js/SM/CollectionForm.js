@@ -151,7 +151,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
         let config = {
             //title: this.title || 'Parent',
             isFormField: true,
-            filteredKeys: _this.filteredKeys || [],
+            ignoreKeys: _this.ignoreKeys || [],
             allowBlank: true,
             layout: 'fit',
             height: 150,
@@ -248,7 +248,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             getName: function () { return this.name },
             validate: function () { return true },
             setValue: function (v) {
-                const entries = _this.filteredKeys.length ? Object.entries(v).filter(entry =>  !_this.filteredKeys.includes(entry[0])) : Object.entries(v)
+                const entries = _this.ignoreKeys.length ? Object.entries(v).filter(entry =>  !_this.ignoreKeys.includes(entry[0])) : Object.entries(v)
                 this.store.loadData(entries)
             }
         }
@@ -816,7 +816,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             title: 'Metadata',
             iconCls: 'sm-database-save-icon',
             name: 'metadata',
-            filteredKeys: ['fieldSettings'],
+            ignoreKeys: ['fieldSettings', 'statusSettings'],
             anchor: '100% 0',
             border: true,
             listeners: {
