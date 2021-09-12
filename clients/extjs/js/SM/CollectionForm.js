@@ -640,9 +640,20 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                         {
                             xtype: 'textfield',
                             fieldLabel: 'Name',
+                            getValue: function () {
+                                return Ext.form.TextField.prototype.getValue.call(this)?.trim()
+                            },
+                            validator: function (v) {
+                                return v?.trim() ? true : 'Invalid empty string'
+                            },
                             name: 'name',
                             allowBlank: false,
                             anchor: '100%'  // anchor width by percentage
+                        },
+                        {
+                            xtype: 'hidden',
+                            name: 'workflow',
+                            value: 'emass'
                         },
                         {
                             xtype: 'sm-collection-settings-review-fields',
@@ -723,21 +734,22 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     }
                 },
                 change: async (field, newValue, oldValue) => {
+                    if (!newValue?.trim()) { // only spaces
+                        field.setValue(oldValue)
+                        return
+                    }
                     try {
-                        let result = await Ext.Ajax.requestPromise({
+                        await Ext.Ajax.requestPromise({
                             url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                             method: 'PATCH',
                             jsonData: {
-                                name: newValue
+                                name: newValue.trim()
                             }
                         })
-                        // let apiCollection = JSON.parse(result.response.responseText)
                         SM.Dispatcher.fireEvent('collectionchanged', {
                             collectionId: _this.collectionId,
-                            name: newValue
+                            name: newValue.trim()
                         })
-
-                        // alert (result.response.responseText)
                     }
                     catch (e) {
                         alert("Name update failed")
@@ -747,7 +759,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             }
         })          
         const delButton = new Ext.Button({
-            iconCls: 'icon-del',
+            iconCls: 'sm-trash-icon',
             // cls: 'sm-bare-button',
             width: 25,
             border: false,
@@ -837,6 +849,30 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     }
                 }
             }
+        })
+        const settingsStatusFeilds = new SM.Collection.StatusSettings.StatusFields({
+            iconCls: 'sm-star-icon-16',
+            statusSettings: JSON.parse(_this.apiCollection?.metadata?.statusSettings ?? null),
+            border: true,
+            autoHeight: true,
+            onStatusCheck: async function (fieldset) {
+                try {
+                    const statusSettings = fieldset.serialize()
+                    await putMetadataValue('statusSettings', JSON.stringify(statusSettings))
+                    // SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, statusSettings)
+                }
+                catch (e) {
+                    alert(e.message)
+                    try {
+                        const apiSettings = await getMetadataValue('statusSettings')
+                        fieldset.setValues(JSON.parse(apiSettings))
+                    }
+                    catch (e) {
+                        alert(e.message)
+                    }
+                }
+            }
+
         })
 
         let firstItem = nameField
@@ -964,8 +1000,6 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                             activeTab: 0,
                             border: false,
                             items: [ 
-                                grantGrid,
-                                metadataGrid,
                                 {
                                     xtype: 'panel',
                                     title: 'Settings',
@@ -974,49 +1008,19 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                                     border: true,
                                     padding: 10,
                                     items: [
-                                        settingsReviewFields
+                                        settingsReviewFields,
+                                        settingsStatusFeilds
                                     ]
-                                }
+                                },
+                                grantGrid,
+                                metadataGrid
                             ]      
                                 
                         }
                                
                     ]
                 }
-            ],
-            // items: [
-            //     {
-            //         layout: 'border',
-            //         height: 750,
-            //         items: [{
-            //             title: 'South Region is resizable',
-            //             region: 'south',     // position for region
-            //             height: 100,
-            //             split: true,         // enable resizing
-            //             minSize: 75,         // defaults to 50
-            //             maxSize: 150,
-            //             margins: '0 5 5 5'
-            //         },{
-            //             // xtype: 'panel' implied by default
-            //             title: 'West Region is collapsible',
-            //             region:'west',
-            //             margins: '5 0 0 5',
-            //             width: 200,
-            //             collapsible: true,   // make collapsible
-            //             cmargins: '5 5 0 5', // adjust top margin when collapsed
-            //             id: 'west-region-container',
-            //             layout: 'fit',
-            //             unstyled: true
-            //         },{
-            //             title: 'Center Region',
-            //             region: 'center',     // center region is required, no width/height specified
-            //             xtype: 'container',
-            //             layout: 'fit',
-            //             margins: '5 5 0 0'
-            //         }]
-                
-            //     } 
-            // ]
+            ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.Collection.ManagePanel.superclass.initComponent.call(this);
@@ -1264,9 +1268,56 @@ Ext.ns('SM.Collection.StatusSettings')
 SM.Collection.StatusSettings.AcceptCheckbox = Ext.extend(Ext.form.Checkbox, {
     initComponent: function () {
         const _this = this
-        const config = {}
+        const config = {
+            boxLabel: 'Accept or Reject reviews <i>(requires Manage grant or higher)</i>'
+        }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.StatusSettings.AcceptCheckbox.superclass.initComponent.call(this)
+        SM.Collection.StatusSettings.AcceptCheckbox.superclass.initComponent.call(this)
+    }
+})
+SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
+    initComponent: function () {
+        const _this = this
+        _this.statusSettings = _this.statusSettings ?? {
+            canAccept: true
+        }
+        const canAcceptCheckbox = new SM.Collection.StatusSettings.AcceptCheckbox({
+            name: 'canAccept',
+            hideLabel: true,
+            checked: _this.statusSettings.canAccept,
+            listeners: {
+                check: onStatusCheck
+            }
+        })
+
+        _this.serialize = function () {
+            const output = {}
+            const items = [
+                canAcceptCheckbox
+            ]
+            for (const item of items) {
+                output[item.name] = item.getValue()
+            }
+            return output
+        }
+
+        _this.setValues = function (values) {
+            canAcceptCheckbox.setValue(values.canAccept)
+        }
+
+        function onStatusCheck(item, checked) {
+            _this.onStatusCheck && _this.onStatusCheck(_this, item, checked)
+        }
+
+        let config = {
+            title: _this.title || 'Status handling',
+            labelWidth: 0,
+            items: [
+                canAcceptCheckbox
+            ]
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.StatusSettings.StatusFields.superclass.initComponent.call(this);
     }
 })
 

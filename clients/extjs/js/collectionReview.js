@@ -967,7 +967,9 @@ async function addCollectionReview ( params ) {
 		});
 
 		function showAcceptBtn () {
-			return leaf.collectionGrant < 3 || apiCollection.workflow !== 'emass'
+			const grantCondition =  leaf.collectionGrant >= 3
+			const settingsCondition = apiCollection.metadata.statusSettings ? JSON.parse(apiCollection.metadata.statusSettings)?.canAccept : true
+			return grantCondition && settingsCondition 
 		}
 
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
@@ -1154,7 +1156,7 @@ async function addCollectionReview ( params ) {
 						iconCls: 'sm-star-icon-16',
 						id: 'reviewsGrid-approveButton' + idAppend,
 						text: 'Accept',
-						hidden: showAcceptBtn(),
+						hidden: !showAcceptBtn(),
 						handler: function (btn) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'accepted');
@@ -1162,7 +1164,7 @@ async function addCollectionReview ( params ) {
 					},
 					{
 						xtype: 'tbseparator',
-						hidden: showAcceptBtn()
+						hidden: !showAcceptBtn()
 					},
 					{
 						xtype: 'tbbutton',
@@ -1624,7 +1626,7 @@ async function addCollectionReview ( params ) {
 				id: 'rejectSubmitButton' + idAppend,
 				iconCls: 'sm-rejected-icon',
 				reviewsGrid: reviewsGrid,
-				hidden: showAcceptBtn(),
+				hidden: !showAcceptBtn(),
 				handler: handleRejections
 			}]
 		});

@@ -1028,13 +1028,12 @@ async function addReview( params ) {
       border: false,
       deferredRender: false,
       id: 'resources-tabs' + idAppend,
-      activeTab: ('undefined' !== typeof selectedResource ? selectedResource : 'attachmentsGrid' + idAppend),
+      activeTab: ('undefined' !== typeof selectedResource ? selectedResource : 'other-tab' + idAppend),
       listeners: {
         beforerender: function (tabs) {
         }
       },
       items: [
-        attachmentsGrid,
         {
           title: 'Other Assets',
           border: false,
@@ -1042,6 +1041,7 @@ async function addReview( params ) {
           id: 'other-tab' + idAppend,
           items: otherGrid
         },
+        attachmentsGrid,
         {
           title: 'Feedback',
           //layout: 'fit',
@@ -1251,7 +1251,7 @@ async function addReview( params ) {
         SM.Dispatcher.removeListener('fieldsettingschanged', onFieldSettingsChanged)
       },
       beforeclose: function (p) {
-        var isDirty = reviewForm.isDirty();
+        var isDirty = reviewForm.reviewChanged();
         var isValid = reviewForm.getForm().isValid();
 
         if (isDirty && isValid) {

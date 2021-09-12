@@ -948,10 +948,15 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
   background-repeat: no-repeat;
   background-size: 16px 16px;
 }
- .sm-report-icon {
- background-image: url(../img/grid.svg) !important;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
+.sm-report-icon {
+	background-image: url(../img/grid.svg) !important;
+	 background-repeat: no-repeat;
+	 background-size: 16px 16px;
+}
+.sm-trash-icon {
+	background-image: url(../img/trash.svg) !important;
+	background-repeat: no-repeat;
+	background-size: 16px 16px;
 }
 .sm-chat-icon {
  background-image: url(../img/chat-16.png) !important;
