@@ -775,7 +775,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             labelStyle: 'font-weight: 600;',
             value: _this.apiCollection?.description,
             name: 'description',
-            anchor: '100%',
+            anchor: '100% 0',
             listeners: {
                 focus: function (field) {
                     field.addClass('sm-field-focus')
@@ -891,7 +891,9 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
         let config = {
             title: this.title || 'Collection properties',
             layout: 'form',
+            cls: 'sm-collection-manage-layout sm-round-panel',
             labelWidth: 100,
+            padding: 15,
             getFieldValues: function (dirtyOnly) {
                 // Override Ext.form.FormPanel implementation to check submitValue
                 let o = {}, n, key, val;
@@ -915,34 +917,106 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             },
             items: [
                 {
-                    xtype: 'fieldset',
-                    title: 'Information',
-                    items: [firstItem, descriptionField]
-                },
-                {
-                    xtype: 'tabpanel',
-                    deferredRender: false, // needed for RowEditor.stopEditing() unmask
-                    activeTab: 0,
-                    anchor: '100% -148',
+                    layout: 'border',
+                    anchor: '100% 0',
+                    hideLabels: true,
                     border: false,
-                    items: [ 
-                        grantGrid,
-                        metadataGrid,
+                    baseCls: 'x-plain',
+                    // style: 'background-color: white;',
+                    items: [
                         {
-                            xtype: 'panel',
-                            title: 'Settings',
-                            layout: 'form',
-                            iconCls: 'sm-setting-icon',
-                            border: true,
-                            padding: 10,
-                            items: [
-                                settingsReviewFields
-                            ]
+                            layoutConfig: {
+                                getLayoutTargetSize : function() {
+                                  var target = this.container.getLayoutTarget(), ret = {};
+                                  if (target) {
+                                      ret = target.getViewSize();
+                          
+                                      // IE in strict mode will return a width of 0 on the 1st pass of getViewSize.
+                                      // Use getStyleSize to verify the 0 width, the adjustment pass will then work properly
+                                      // with getViewSize
+                                      if (Ext.isIE9m && Ext.isStrict && ret.width == 0){
+                                          ret =  target.getStyleSize();
+                                      }
+                                      ret.width -= target.getPadding('lr');
+                                      ret.height -= target.getPadding('tb');
+                                      // change in this override to account for space used by 
+                                      // the Result combo box and the 4px bottom-margin of each textarea
+                                      ret.height -= 30 
+                                  }
+                                  return ret;
+                                }
+                            }, 
+                            // style: 'background-color: white;',
+                            xtype: 'fieldset',
+                            region: 'north',
+                            height: 200,
+                            split: true,
+                            title: 'Information',
+                            items: [ firstItem, descriptionField]
+                        },
+                        {
+                            xtype: 'tabpanel',
+                            style: {
+                                paddingTop: "10px"
+                            },
+                            region: 'center',
+                            deferredRender: false, // needed for RowEditor.stopEditing() unmask
+                            activeTab: 0,
+                            border: false,
+                            items: [ 
+                                grantGrid,
+                                metadataGrid,
+                                {
+                                    xtype: 'panel',
+                                    title: 'Settings',
+                                    layout: 'form',
+                                    iconCls: 'sm-setting-icon',
+                                    border: true,
+                                    padding: 10,
+                                    items: [
+                                        settingsReviewFields
+                                    ]
+                                }
+                            ]      
+                                
                         }
-                    ]      
+                               
+                    ]
                 }
+            ],
+            // items: [
+            //     {
+            //         layout: 'border',
+            //         height: 750,
+            //         items: [{
+            //             title: 'South Region is resizable',
+            //             region: 'south',     // position for region
+            //             height: 100,
+            //             split: true,         // enable resizing
+            //             minSize: 75,         // defaults to 50
+            //             maxSize: 150,
+            //             margins: '0 5 5 5'
+            //         },{
+            //             // xtype: 'panel' implied by default
+            //             title: 'West Region is collapsible',
+            //             region:'west',
+            //             margins: '5 0 0 5',
+            //             width: 200,
+            //             collapsible: true,   // make collapsible
+            //             cmargins: '5 5 0 5', // adjust top margin when collapsed
+            //             id: 'west-region-container',
+            //             layout: 'fit',
+            //             unstyled: true
+            //         },{
+            //             title: 'Center Region',
+            //             region: 'center',     // center region is required, no width/height specified
+            //             xtype: 'container',
+            //             layout: 'fit',
+            //             margins: '5 5 0 0'
+            //         }]
                 
-            ]
+            //     } 
+            // ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.Collection.ManagePanel.superclass.initComponent.call(this);
