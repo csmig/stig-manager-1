@@ -42,6 +42,8 @@ SM.Review.Form.ResultCombo = Ext.extend(Ext.form.ComboBox, {
 })
 
 SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
+  //onInput: handler for element's input event
+  //infoTip: tooltip attached to question circle
   initComponent: function () {
     const _this = this
     const config = {
@@ -57,12 +59,13 @@ SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
       listeners: {
         render: function (ta) {
           ta.mon( ta.el, 'input', _this.onInput)
-          new Ext.ToolTip({
+          _this.infoTip = new Ext.ToolTip({
             target: ta.label.dom.getElementsByClassName('fa')[0],
             showDelay: 0,
             dismissDelay: 0,
             autoWidth: true,
-            html: SM.DetailTipText
+            tpl: SM.DetailTipTpl,
+            data: _this.fieldSettings
           }) 
         }
       }
@@ -125,12 +128,13 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
       listeners: {
         'render': function (ta) {
           ta.mon( ta.el, 'input', _this.onInput)
-          new Ext.ToolTip({
+          _this.infoTip = new Ext.ToolTip({
             target: ta.label.dom.getElementsByClassName('fa')[0],
             showDelay: 0,
             dismissDelay: 0,
             autoWidth: true,
-            html: SM.CommentTipText
+            tpl: SM.CommentTipTpl,
+            data: _this.fieldSettings
           }) 
         }
       }
@@ -206,12 +210,14 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     })
     const dta = new SM.Review.Form.DetailTextArea({
       anchor: '100%, 50%',
+      fieldSettings: _this.fieldSettings,
       onInput: function (e) {
         _this.setReviewFormItemStates()
       }
     })
     const cta = new SM.Review.Form.CommentTextArea({ 
       anchor: '100%, 50%',
+      fieldSettings: _this.fieldSettings,
       onInput: function (e) {
         _this.setReviewFormItemStates()
       }
@@ -228,21 +234,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     const btn2 = new SM.Review.Form.Button({
       handler: _this.btnHandler
     })
-    // const ack = new Ext.form.Checkbox({
-    //   boxLabel: 'Auto',
-    //   hideLabel: true,
-    //   allowBlank: true,
-    //   name: 'autoResult'
-    // })
-    // const ack = new Ext.Panel({
-    //   baseCls: 'x-plain',
-    //   padding: '0 0 0 10',
-    //   width: 100,
-    //   height: 22,
-    //   html: `<span class='sm-review-auto-sprite' ext:qtip="The result was deternined by an automated tool which means it was not evaluated by a person.">Automated</span>`
-    // })
-
-
 
     let status = ''
 
@@ -286,6 +277,19 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         && rcb.value === 'fail'
         && (!cta.getValue())) return false
       return true
+    }
+
+    function setReviewFormTips () {
+      const fields = [dta, cta]
+      for (const f of fields) {
+        f.fieldSettings = _this.fieldSettings
+        if (f.infoTip.body) {
+          f.infoTip.update(_this.fieldSettings)
+        }
+        else {
+          f.infoTip.data = f.fieldSettings
+        }
+      }
     }
     
     function setReviewFormItemStates () {
@@ -519,6 +523,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       initLastSavedData: initLastSavedData,
       isReviewSubmittable: isReviewSubmittable,
       setReviewFormItemStates: setReviewFormItemStates,
+      setReviewFormTips: setReviewFormTips,
       fieldSettings: this.fieldSettings || {
         detailEnabled: 'always',
         detailRequired: 'always',

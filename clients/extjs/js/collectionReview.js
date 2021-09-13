@@ -1140,7 +1140,8 @@ async function addCollectionReview ( params ) {
 									showDelay: 0,
 									dismissDelay: 0,
 									autoWidth: true,
-									html: SM[`${idPrefix}TipText`]
+									tpl: SM[`${idPrefix}TipTpl`],
+									data: apiFieldSettings
 								}) 
 							}
 						}					
@@ -1198,7 +1199,14 @@ async function addCollectionReview ( params ) {
 		});
 
 		reviewsGrid.on('beforeedit', beforeEdit, this );
-
+		function onFieldSettingsChanged (collectionId, fieldSettings) {
+			if (collectionId === apiCollection.collectionId) {
+				apiFieldSettings = fieldSettings
+				setReviewsGridButtonStates()
+			}
+		}
+		SM.Dispatcher.addListener('fieldsettingschanged', onFieldSettingsChanged)
+	
 		async function getContent(benchmarkId, revisionStr, ruleId, groupId) {
 			try {
 				// Content panel
@@ -1450,57 +1458,7 @@ async function addCollectionReview ( params ) {
 	// END Reviews Panel
 	/******************************************************/
 
-	let contentTpl = new Ext.XTemplate(
-    '<div class=cs-home-header-top>{ruleId}',
-      '<span class="sm-content-sprite sm-severity-{severity}">',
-        `<tpl if="severity == 'high'">CAT 1</tpl>`,
-        `<tpl if="severity == 'medium'">CAT 2</tpl>`,
-        `<tpl if="severity == 'low'">CAT 3</tpl>`, 
-      '</span>',
-    '</div>',
-    '<div class=cs-home-header-sub>{title}</div>',
-    '<div class=cs-home-body-title>Manual Check',
-    '<div class=cs-home-body-text>',
-    '<tpl for="checks">',
-      '<pre>{[values.content?.trim()]}</pre>',
-    '</tpl>',
-    '</div>',
-    '</div>',
-    '<div class=cs-home-body-title>Fix',
-    '<div class=cs-home-body-text>',
-    '<tpl for="fixes">',
-    '<pre>{[values.text?.trim()]}</pre>',
-    '</tpl>',
-    '</div>',
-    '</div>',
-    '<div class=cs-home-header-sub></div>',
-    '<div class=cs-home-body-title>Other Data',
-    '<tpl if="values.detail.vulnDiscussion">',
-      '<div class=cs-home-body-text><b>Vulnerability Discussion</b><br><br>',
-      '<pre>{[values.detail.vulnDiscussion?.trim()]}</pre>',
-      '</div>',
-    '</tpl>',
-    '<tpl if="values.detail.documentable">',
-    	'<div class=cs-home-body-text><b>Documentable: </b>{values.detail.documentable}</div>',
-		'</tpl>',
-    '<tpl if="values.detail.responsibility">',
-      '<div class=cs-home-body-text><b>Responsibility: </b>{values.detail.responsibility}</div>',
-    '</tpl>',
-    '<tpl if="values.ccis.length === 0">',
-      '<div class=cs-home-body-text><b>Controls: </b>No mapped controls</div>',
-    '</tpl>',
-    '<tpl if="values.ccis.length !== 0">',
-      '<div class=cs-home-body-text><b>Controls: </b><br>',
-      '<table class=cs-home-body-table border="1">',
-      '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
-      '<tpl for="ccis">',
-      '<tr><td>{cci}</td><td>{apAcronym}</td><td>{control}</td></tr>',
-      '</tpl>',
-      '</table>',
-      '</div>',
-    '</tpl>',
-    '</div>'
-	  )
+	let contentTpl = SM.RuleContentTpl
 
 	/******************************************************/
 	// START Resources Panel
@@ -1781,6 +1739,9 @@ async function addCollectionReview ( params ) {
 			sm_tabMode: 'ephemeral',
 			sm_treePath: treePath,
 			listeners: {
+				beforedestroy: () => {
+					SM.Dispatcher.removeListener('fieldsettingschanged', onFieldSettingsChanged)
+				}
 			}			
 		})
 		colReviewTab.updateTitle = function () {
