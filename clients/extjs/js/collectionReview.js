@@ -1290,7 +1290,7 @@ async function addCollectionReview ( params ) {
 			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
 			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
 			const unsubmitBtn = Ext.getCmp('reviewsGrid-unsubmitButton' + idAppend);
-			const rejectBtn = Ext.getCmp('rejectSubmitButton' + idAppend);
+			const rejectOtherPanel = Ext.getCmp('rejectOtherPanel' + idAppend);
 			const selections = sm.getSelections();
 			const selLength = selections.length;
 			let approveBtnEnabled = true;
@@ -1395,7 +1395,7 @@ async function addCollectionReview ( params ) {
 			approveBtn.setDisabled(!approveBtnEnabled);
 			submitBtn.setDisabled(!submitBtnEnabled);
 			unsubmitBtn.setDisabled(!unsubmitBtnEnabled);
-			rejectBtn.setDisabled(!rejectFormEnabled);
+			rejectFormPanel.setDisabled(!rejectFormEnabled);
 		};
 		
 		async function handleStatusChange (grid,sm,status) {
@@ -1467,7 +1467,7 @@ async function addCollectionReview ( params ) {
 			let activeTab
 			try {
 				activeTab = Ext.getCmp('resources-tab-panel' + idAppend).getActiveTab()
-				activeTab.getEl().mask('Loading...')
+				// activeTab.getEl().mask('Loading...')
 				const attachmentsGrid = Ext.getCmp('attachmentsGrid' + idAppend)
 				attachmentsGrid.assetId = record.data.assetId
 				attachmentsGrid.ruleId = record.data.ruleId
@@ -1561,6 +1561,7 @@ async function addCollectionReview ( params ) {
 		
 		var rejectFormPanel = new Ext.form.FormPanel({
 			baseCls: 'x-plain',
+			disabled: true,
 			id: 'rejectFormPanel' + idAppend,
 			cls: 'sm-background-blue',
 			labelWidth: 95,

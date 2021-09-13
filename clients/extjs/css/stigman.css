@@ -342,8 +342,8 @@ body {
 .x-fieldset {
     border-radius: 3px;
 }
-.ext-el-mask {
-    background-color: #666;
+.x-body-masked .ext-el-mask {
+    background-color: black;
 }
 .sm-round-panel .x-window-header {
 	color: #111;
