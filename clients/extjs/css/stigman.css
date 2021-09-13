@@ -19,8 +19,8 @@
 
 }
 .x-form-text.sm-field-focus, .x-form-textarea.sm-field-focus {
-	background-color: #fff9de;
-	border-color: black
+	border: 1px solid rgb(220, 134, 51);
+	box-shadow: inset rgb(220 134 51 / 20%) 0px 0px 2px 2px;
 }
 .sm-review-auto-sprite {
 	color: #fcfcfc !important;

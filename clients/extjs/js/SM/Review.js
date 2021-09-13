@@ -213,6 +213,14 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       fieldSettings: _this.fieldSettings,
       onInput: function (e) {
         _this.setReviewFormItemStates()
+      },
+      listeners: {
+        focus: function (field) {
+          field.addClass('sm-field-focus')
+        },
+        blur: function (field) {
+            field.removeClass('sm-field-focus')
+        }
       }
     })
     const cta = new SM.Review.Form.CommentTextArea({ 
@@ -220,6 +228,14 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       fieldSettings: _this.fieldSettings,
       onInput: function (e) {
         _this.setReviewFormItemStates()
+      },
+      listeners: {
+        focus: function (field) {
+          field.addClass('sm-field-focus')
+        },
+        blur: function (field) {
+            field.removeClass('sm-field-focus')
+        }
       }
     })
     const mdf = new Ext.form.DisplayField({
