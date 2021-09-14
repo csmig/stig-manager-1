@@ -226,7 +226,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         text: 'Import CKL or SCAP...',
                         handler: function() {
                             let el = Ext.getCmp(`${me.collectionId}-collection-manager-tab`)
-                            showImportResultFiles( me.collectionId, el.getEl().dom );            
+                            showImportResultFiles( me.collectionId, {fieldSettings: me.apiFieldSettings} );            
                         }
                     },
                     '-',

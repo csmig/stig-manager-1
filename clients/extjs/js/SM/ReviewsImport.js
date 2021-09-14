@@ -1286,7 +1286,7 @@ class TaskObject {
     }
 }
 
-async function showImportResultFiles(collectionId, el) {
+async function showImportResultFiles(collectionId, options) {
     try {
         const fp = new SM.ReviewsImport.SelectFilesPanel({
             border: false,
@@ -1562,7 +1562,7 @@ async function showImportResultFiles(collectionId, el) {
                     let data = await readTextFileAsync(file)
                     if (extension === 'ckl') {
                         try {
-                            const r = reviewsFromCkl(data, { ignoreNr: true })
+                            const r = reviewsFromCkl(data, { ignoreNr: true, fieldSettings: options.fieldSettings })
                             r.file = file
                             parseResults.success.push(r)
                         }
@@ -2023,7 +2023,7 @@ async function showImportResultFile(params) {
             let data = await readTextFileAsync(file)
             let r
             if (extension === 'ckl') {
-                r = reviewsFromCkl(data, { ignoreNr: false })
+                r = reviewsFromCkl(data, { ignoreNr: false, fieldSettings: params.fieldSettings })
             }
             if (extension === 'xml') {
                 r = reviewsFromScc(data, { ignoreNotChecked: false })

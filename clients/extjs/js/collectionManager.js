@@ -17,6 +17,18 @@ async function addCollectionManager( params ) {
 			method: 'GET'
 		})
 		let apiCollection = JSON.parse(result.response.responseText)
+		let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
+			detailEnabled: 'always',
+			detailRequired: 'always',
+			commentEnabled: 'findings',
+			commentRequired: 'findings'
+		}
+		function onFieldSettingsChanged (collectionId, fieldSettings) {
+			if (collectionId === apiCollection.collectionId) {
+				apiFieldSettings = fieldSettings
+				assetGrid.apiFieldSettings = apiFieldSettings
+			}
+		}
 	
 		let collectionPanel = new SM.Collection.ManagePanel({
 			collectionId: collectionId,
@@ -74,6 +86,7 @@ async function addCollectionManager( params ) {
 		let assetGrid = new SM.CollectionAssetGrid({
 			collectionId: collectionId,
 			collectionName: collectionName,
+			apiFieldSettings: apiFieldSettings,
 			url: `${STIGMAN.Env.apiBase}/assets`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
@@ -190,6 +203,7 @@ async function addCollectionManager( params ) {
 		SM.Dispatcher.addListener('assetcreated', onAssetEvent)
 		SM.Dispatcher.addListener('assetdeleted', onAssetEvent)
 		SM.Dispatcher.addListener('stigassetschanged', onStigAssetsChanged)
+		SM.Dispatcher.addListener('fieldsettingschanged', onFieldSettingsChanged)
 	}
 	catch( e) {
 		throw (e)

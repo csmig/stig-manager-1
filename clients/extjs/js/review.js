@@ -259,16 +259,17 @@ async function addReview( params ) {
         text: 'Import Results...',
         iconCls: 'sm-import-icon',
         handler: function () {
-          showImportResultFile( {...leaf, revisionStr: groupGrid.sm_revisionStr, store: groupStore} );            
+          showImportResultFile( {...leaf, revisionStr: groupGrid.sm_revisionStr, store: groupStore, fieldSettings: apiFieldSettings} );            
         }
       },
       '-',
+      // {
+      //   text: 'Submit All...',
+      //   iconCls: 'sm-ready-icon',
+      //   hideOnClick: true,
+      //   handler: bulkSubmit
+      // },
       {
-        text: 'Submit All...',
-        iconCls: 'sm-ready-icon',
-        hideOnClick: true,
-        handler: bulkSubmit
-      }, {
         text: 'Reset reviews...',
         id: 'unlockMenuItem' + idAppend,
         iconCls: 'sm-unlock-icon',

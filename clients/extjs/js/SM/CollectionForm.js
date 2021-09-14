@@ -1325,7 +1325,7 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
             name: 'canAccept',
             ctCls: 'sm-cb',
             hideLabel: true,
-            boxLabel: 'Accept or Reject reviews with Grant of',
+            boxLabel: 'Reviews can be Accepted or Rejected',
             checked: _this.statusSettings.canAccept,
             listeners: {
                 check: onStatusCheck
@@ -1333,6 +1333,7 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
         })
         const grantComboBox = new SM.Collection.StatusSettings.GrantComboBox({
             name: 'minGrant',
+            fieldLabel: '<span style="padding-left: 15px;">Grant required to set Accept or Reject</span>', 
             disabled: !_this.statusSettings.canAccept,
             width: 125,
             value: _this.statusSettings.minGrant || 3,
@@ -1370,16 +1371,18 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
 
         let config = {
             title: _this.title || 'Status handling',
-            labelWidth: 100,
+            labelWidth: 220,
             items: [
-                {
-                    xtype: 'compositefield',
-                    hideLabel: true,
-                    items: [
-                        canAcceptCheckbox,
-                        grantComboBox      
-                    ]
-                }
+                canAcceptCheckbox,
+                grantComboBox      
+                // {
+                //     xtype: 'compositefield',
+                //     hideLabel: true,
+                //     items: [
+                //         canAcceptCheckbox,
+                //         grantComboBox      
+                //     ]
+                // }
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))

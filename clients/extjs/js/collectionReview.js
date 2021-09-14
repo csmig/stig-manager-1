@@ -234,48 +234,47 @@ async function addCollectionReview ( params ) {
 						]
 					}
 				},
-				{
-					text: 'Reset reviews...',
-					iconCls: 'sm-unlock-icon',
-					handler: function(){
-						//===================================================
-						//UNLOCKS ALL RULE REVIEWS FOR A SPECIFIC STIG
-						//===================================================
-						Ext.Msg.show({
-							title: 'Confirm review reset',
-							msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in this Collection?',
-							buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
-							icon: Ext.MessageBox.QUESTION,
-							closable: false,
-							fn: function(buttonId){
-								if (buttonId == 'yes'){
-									//===============================================
-									//GATHER INFORMATION ACCORDINGLY AND EXECUTE
-									//THE REVIEW RESET.
-									//===============================================
-									var unlockObject = new Object;
-									unlockObject.benchmarkId = leaf.benchmarkId;
-									//unlockObject.stigName = leaf.benchmarkId;
-									unlockObject.assetId = -1;
-									unlockObject.assetName = '';
-									unlockObject.collectionId =leaf.collectionId;
-									// unlockObject.collectionName=apiCollection.name;
-									unlockObject.gridTorefresh = groupGrid;
-									batchReviewUnlock(unlockObject);
-									//===============================================
-									//REFRESH THE INTERFACE
-									//===============================================
-									//groupGrid.getStore().reload();
-									// Ext.getCmp('content-panel' + idAppend).update('')
-									// reviewsGrid.getStore().removeAll(true);
-									// reviewsGrid.getView().refresh();
-								}
-							}
-						});
-					}
+				// {
+				// 	text: 'Reset reviews...',
+				// 	iconCls: 'sm-unlock-icon',
+				// 	handler: function(){
+				// 		//===================================================
+				// 		//UNLOCKS ALL RULE REVIEWS FOR A SPECIFIC STIG
+				// 		//===================================================
+				// 		Ext.Msg.show({
+				// 			title: 'Confirm review reset',
+				// 			msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in this Collection?',
+				// 			buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
+				// 			icon: Ext.MessageBox.QUESTION,
+				// 			closable: false,
+				// 			fn: function(buttonId){
+				// 				if (buttonId == 'yes'){
+				// 					//===============================================
+				// 					//GATHER INFORMATION ACCORDINGLY AND EXECUTE
+				// 					//THE REVIEW RESET.
+				// 					//===============================================
+				// 					var unlockObject = new Object;
+				// 					unlockObject.benchmarkId = leaf.benchmarkId;
+				// 					//unlockObject.stigName = leaf.benchmarkId;
+				// 					unlockObject.assetId = -1;
+				// 					unlockObject.assetName = '';
+				// 					unlockObject.collectionId =leaf.collectionId;
+				// 					// unlockObject.collectionName=apiCollection.name;
+				// 					unlockObject.gridTorefresh = groupGrid;
+				// 					batchReviewUnlock(unlockObject);
+				// 					//===============================================
+				// 					//REFRESH THE INTERFACE
+				// 					//===============================================
+				// 					//groupGrid.getStore().reload();
+				// 					// Ext.getCmp('content-panel' + idAppend).update('')
+				// 					// reviewsGrid.getStore().removeAll(true);
+				// 					// reviewsGrid.getView().refresh();
+				// 				}
+				// 			}
+				// 		});
+				// 	}
 					
-				}
-				,
+				// },
 				'-'
 			]
 		});
