@@ -738,18 +738,16 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         field.setValue(oldValue)
                         return
                     }
+                    let response
                     try {
-                        await Ext.Ajax.requestPromise({
+                        response = await Ext.Ajax.requestPromise({
                             url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                             method: 'PATCH',
                             jsonData: {
                                 name: newValue.trim()
                             }
                         })
-                        SM.Dispatcher.fireEvent('collectionchanged', {
-                            collectionId: _this.collectionId,
-                            name: newValue.trim()
-                        })
+                        SM.Dispatcher.fireEvent('collectionchanged', response)
                     }
                     catch (e) {
                         alert("Name update failed")
@@ -865,16 +863,16 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 }
             }
         })
-        const settingsStatusFeilds = new SM.Collection.StatusSettings.StatusFields({
+        const settingsStatusFields = new SM.Collection.StatusSettings.StatusFields({
             iconCls: 'sm-star-icon-16',
             statusSettings: JSON.parse(_this.apiCollection?.metadata?.statusSettings ?? null),
             border: true,
             autoHeight: true,
-            onStatusCheck: async function (fieldset) {
+            onFieldsUpdate: async function (fieldset) {
                 try {
                     const statusSettings = fieldset.serialize()
                     await putMetadataValue('statusSettings', JSON.stringify(statusSettings))
-                    // SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, statusSettings)
+                    SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, statusSettings)
                 }
                 catch (e) {
                     alert(e.message)
@@ -887,7 +885,6 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     }
                 }
             }
-
         })
 
         let firstItem = nameField
@@ -1024,7 +1021,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                                     padding: 10,
                                     items: [
                                         settingsReviewFields,
-                                        settingsStatusFeilds
+                                        settingsStatusFields
                                     ]
                                 },
                                 grantGrid,
@@ -1284,31 +1281,71 @@ SM.Collection.StatusSettings.AcceptCheckbox = Ext.extend(Ext.form.Checkbox, {
     initComponent: function () {
         const _this = this
         const config = {
-            boxLabel: 'Accept or Reject reviews <i>(requires Manage grant or higher)</i>'
+            boxLabel: this.boxLabel || 'Accept or Reject reviews'
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.Collection.StatusSettings.AcceptCheckbox.superclass.initComponent.call(this)
     }
 })
+SM.Collection.StatusSettings.GrantComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false
+        }
+        let _this = this
+        let data = [
+            [3, 'Manage or Owner'],
+            [4, 'Owner']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.StatusSettings.GrantComboBox.superclass.initComponent.call(this)
+        this.store.loadData(data)
+    }
+})
+
 SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         _this.statusSettings = _this.statusSettings ?? {
-            canAccept: true
+            canAccept: true,
+            minGrant: 3
         }
         const canAcceptCheckbox = new SM.Collection.StatusSettings.AcceptCheckbox({
             name: 'canAccept',
+            ctCls: 'sm-cb',
             hideLabel: true,
+            boxLabel: 'Accept or Reject reviews with Grant of',
             checked: _this.statusSettings.canAccept,
             listeners: {
                 check: onStatusCheck
+            }
+        })
+        const grantComboBox = new SM.Collection.StatusSettings.GrantComboBox({
+            name: 'minGrant',
+            disabled: !_this.statusSettings.canAccept,
+            width: 125,
+            value: _this.statusSettings.minGrant || 3,
+            listeners: {
+                select: onGrantSelect
             }
         })
 
         _this.serialize = function () {
             const output = {}
             const items = [
-                canAcceptCheckbox
+                canAcceptCheckbox,
+                grantComboBox
             ]
             for (const item of items) {
                 output[item.name] = item.getValue()
@@ -1317,18 +1354,32 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
         }
 
         _this.setValues = function (values) {
-            canAcceptCheckbox.setValue(values.canAccept)
+            canAcceptCheckbox.setValue(values.canAccept || false)
+            grantComboBox.setValue(values.minGrant || 3)
+            grantComboBox.setDisabled(!values.canAccept)
         }
 
         function onStatusCheck(item, checked) {
-            _this.onStatusCheck && _this.onStatusCheck(_this, item, checked)
+            grantComboBox.setDisabled(!checked)
+            _this.onFieldsUpdate && _this.onFieldsUpdate(_this, item, checked)
+        }
+
+        function onGrantSelect(item, record, index) {
+            _this.onFieldsUpdate && _this.onFieldsUpdate(_this, item, record)
         }
 
         let config = {
             title: _this.title || 'Status handling',
-            labelWidth: 0,
+            labelWidth: 100,
             items: [
-                canAcceptCheckbox
+                {
+                    xtype: 'compositefield',
+                    hideLabel: true,
+                    items: [
+                        canAcceptCheckbox,
+                        grantComboBox      
+                    ]
+                }
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))

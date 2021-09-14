@@ -1,4 +1,7 @@
 
+.sm-cb .x-form-cb-label {
+	top: 3px;
+}
 .sm-collection-manage-layout .x-border-layout-ct, .sm-collection-manage-layout .x-panel-body
 {
     background-color: #f7f7f7;

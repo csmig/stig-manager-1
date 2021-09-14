@@ -22,6 +22,10 @@ async function addCollectionReview ( params ) {
 			commentEnabled: 'findings',
 			commentRequired: 'findings'
 		}
+		let apiStatusSettings = apiCollection.metadata.statusSettings ? JSON.parse(apiCollection.metadata.statusSettings) : {
+			canAccept: true,
+			minGrant: 3
+		}
 	
 		result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/stigs/${leaf.benchmarkId}/assets`,
@@ -967,8 +971,8 @@ async function addCollectionReview ( params ) {
 		});
 
 		function showAcceptBtn () {
-			const grantCondition =  leaf.collectionGrant >= 3
-			const settingsCondition = apiCollection.metadata.statusSettings ? JSON.parse(apiCollection.metadata.statusSettings)?.canAccept : true
+			const grantCondition =  leaf.collectionGrant >= apiStatusSettings.minGrant
+			const settingsCondition = apiStatusSettings.canAccept
 			return grantCondition && settingsCondition 
 		}
 
@@ -1199,9 +1203,17 @@ async function addCollectionReview ( params ) {
 		});
 
 		reviewsGrid.on('beforeedit', beforeEdit, this );
+
 		function onFieldSettingsChanged (collectionId, fieldSettings) {
 			if (collectionId === apiCollection.collectionId) {
 				apiFieldSettings = fieldSettings
+				setReviewsGridButtonStates()
+			}
+		}
+		SM.Dispatcher.addListener('statussettingschanged', onStatusSettingsChanged)
+		function onStatusSettingsChanged (collectionId, statusSettings) {
+			if (collectionId === apiCollection.collectionId) {
+				apStatusSettings = statusSettings
 				setReviewsGridButtonStates()
 			}
 		}
@@ -1742,6 +1754,7 @@ async function addCollectionReview ( params ) {
 			listeners: {
 				beforedestroy: () => {
 					SM.Dispatcher.removeListener('fieldsettingschanged', onFieldSettingsChanged)
+					SM.Dispatcher.removeListener('statussettingschanged', onStatusSettingsChanged)
 				}
 			}			
 		})
