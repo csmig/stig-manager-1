@@ -590,6 +590,242 @@ Ext.reg('sm-user-grants-grid', SM.UserGrantsGrid);
 
 SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
+        const _this = this
+        const nameField = new Ext.form.TextField({
+            fieldLabel: 'Name',
+            labelStyle: 'font-weight: 600;',
+            name: 'name',
+            allowBlank: false,
+            anchor: '100%',
+            enableKeyEvents: true,
+            keys: [
+                {
+                    key: Ext.EventObject.ENTER,
+                    fn: (a, b, c) => {
+                        let one = a
+                        nameField.getEl().blur()
+                    }
+                }
+            ],
+            listeners: {
+                focus: function (field) {
+                    field.addClass('sm-field-focus')
+                },
+                blur: function (field) {
+                    field.removeClass('sm-field-focus')
+                },
+                specialkey: (field, e) => {
+                    if (e.getKey() == e.ENTER) {
+                        field.getEl().blur()
+                    }
+                },
+                change: async (field, newValue, oldValue) => {
+                    if (!newValue?.trim()) { // only spaces
+                        field.setValue(oldValue)
+                        return
+                    }
+                }
+            }
+        })
+        const descriptionField = new Ext.form.TextArea({
+            fieldLabel: 'Description',
+            labelStyle: 'font-weight: 600;',
+            name: 'description',
+            anchor: '100% 0',
+            listeners: {
+                focus: function (field) {
+                    field.addClass('sm-field-focus')
+                },
+                blur: function (field) {
+                    field.removeClass('sm-field-focus')
+                }
+            }
+        })
+        const metadataGrid = new SM.MetadataGrid({
+            title: 'Metadata',
+            iconCls: 'sm-database-save-icon',
+            name: 'metadata',
+            ignoreKeys: ['fieldSettings', 'statusSettings'],
+            anchor: '100% 0',
+            border: true
+        })
+        const settingsReviewFields = new SM.Collection.FieldSettings.ReviewFields({
+            iconCls: 'sm-stig-icon',
+            border: true,
+            autoHeight: true
+        })
+        const settingsStatusFields = new SM.Collection.StatusSettings.StatusFields({
+            iconCls: 'sm-star-icon-16',
+            border: true,
+            autoHeight: true
+        })
+        const grantGrid = new SM.UserGrantsGrid({
+            iconCls: 'sm-users-icon',
+			showAccessBtn: false,
+			title: 'Grants',
+			border: true
+		})
+
+        let config = {
+            cls: 'sm-collection-manage-layout sm-round-panel',
+            baseCls: 'x-plain',
+            bodyStyle: 'padding:10px 10px 10px 10px;',
+            border: false,
+            labelWidth: 100,
+            monitorValid: true,
+            getFieldValues: function (dirtyOnly) {
+                // Override Ext.form.FormPanel implementation to check submitValue
+                // and to create metadata from the review fields configuration
+                let o = {}, n, key, val;
+                this.items.each(function (f) {
+                    if (f.submitValue !== false && !f.disabled && (dirtyOnly !== true || f.isDirty())) {
+                        n = f.getName()
+                        key = o[n]
+                        val = f.getValue()
+                        if (Ext.isDefined(key)) {
+                            if (Ext.isArray(key)) {
+                                o[n].push(val);
+                            } else {
+                                o[n] = [key, val]
+                            }
+                        } else {
+                            o[n] = val
+                        }
+                    }
+                })
+               
+                _this.serializeFieldSettings(o)
+                _this.serializeStatusSettings(o)
+                return o
+            },
+            items: [
+                {
+                    layout: 'border',
+                    anchor: '100% 0',
+                    hideLabels: true,
+                    border: false,
+                    baseCls: 'x-plain',
+                    // style: 'background-color: white;',
+                    items: [
+                        {
+                            layoutConfig: {
+                                getLayoutTargetSize : function() {
+                                  var target = this.container.getLayoutTarget(), ret = {};
+                                  if (target) {
+                                      ret = target.getViewSize();
+                          
+                                      // IE in strict mode will return a width of 0 on the 1st pass of getViewSize.
+                                      // Use getStyleSize to verify the 0 width, the adjustment pass will then work properly
+                                      // with getViewSize
+                                      if (Ext.isIE9m && Ext.isStrict && ret.width == 0){
+                                          ret =  target.getStyleSize();
+                                      }
+                                      ret.width -= target.getPadding('lr');
+                                      ret.height -= target.getPadding('tb');
+                                      // change in this override to account for space used by 
+                                      // the Result combo box and the 4px bottom-margin of each textarea
+                                      ret.height -= 30 
+                                  }
+                                  return ret;
+                                }
+                            }, 
+                            // style: 'background-color: white;',
+                            xtype: 'fieldset',
+                            region: 'north',
+                            height: 200,
+                            split: true,
+                            title: 'Information',
+                            items: [ nameField, descriptionField]
+                        },
+                        {
+                            xtype: 'hidden',
+                            name: 'workflow',
+                            value: 'emass'
+                        },
+                        {
+                            xtype: 'tabpanel',
+                            style: {
+                                paddingTop: "10px"
+                            },
+                            region: 'center',
+                            deferredRender: false, // needed for RowEditor.stopEditing() unmask
+                            activeTab: 0,
+                            border: false,
+                            items: [ 
+                                {
+                                    xtype: 'panel',
+                                    title: 'Settings',
+                                    layout: 'form',
+                                    iconCls: 'sm-setting-icon',
+                                    border: true,
+                                    padding: 10,
+                                    items: [
+                                        settingsReviewFields,
+                                        settingsStatusFields
+                                    ]
+                                },
+                                grantGrid,
+                                metadataGrid
+                            ]      
+                                
+                        }
+                               
+                    ]
+                }
+            ],
+            buttons: [{
+                text: this.btnText || 'Save',
+                formBind: true,
+                handler: this.btnHandler || function () { }
+            }]
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.CreateForm.superclass.initComponent.call(this);
+    },
+    serializeFieldSettings: function (o) {
+        const reviewFields = [
+            'commentEnabled',
+            'commentRequired',
+            'detailEnabled',
+            'detailRequired'
+        ]
+        const fieldSettings = {}
+        for (const field of reviewFields) {
+            fieldSettings[field] = o[field]
+            delete o[field]
+        }
+        if (o.metadata) {
+            o.metadata.fieldSettings = JSON.stringify(fieldSettings)
+        }
+        else {
+            o.metadata = {
+                fieldSettings: JSON.stringify(fieldSettings)
+            }
+        }
+    },
+    serializeStatusSettings: function (o) {
+        const statusFields = [
+            'canAccept',
+            'minGrant'
+        ]
+        const statusSettings = {}
+        for (const field of statusFields) {
+            statusSettings[field] = o[field]
+            delete o[field]
+        }
+        if (o.metadata) {
+            o.metadata.statusSettings = JSON.stringify(statusSettings)
+        }
+        else {
+            o.metadata = {
+                statusSettings: JSON.stringify(statusSettings)
+            }
+        }
+    }
+})
+
+SM.Collection.CreateForm2 = Ext.extend(Ext.form.FormPanel, {
+    initComponent: function () {
         let config = {
             baseCls: 'x-plain',
             bodyStyle: 'padding:10px 10px 10px 10px;',

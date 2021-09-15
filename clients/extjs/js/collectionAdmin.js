@@ -334,13 +334,14 @@ async function showCollectionProps(collectionId) {
     }
     let appwindow = new Ext.Window({
       id: 'window-project-info',
+      cls: 'sm-collection-manage-layout sm-round-panel',
       title: collectionId ? 'Modify Collection' : 'Create Collection',
       modal: true,
       width: 560,
-      height: 550,
+      height: 560,
       layout: 'fit',
       plain: false,
-      bodyStyle: 'padding:5px;',
+      // bodyStyle: 'padding:5px;',
       buttonAlign: 'right',
       items: fp
     })
