@@ -5,7 +5,6 @@
 .sm-collection-manage-layout .x-border-layout-ct, .sm-collection-manage-layout .x-panel-body, .sm-collection-manage-layout .sm-round-panel
 {
     background-color: #f7f7f7;
-    backdrop-filter: blur(66px);
 }
 .sm-collection-manage-layout .x-layout-split {
     position: absolute;
