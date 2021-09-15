@@ -347,9 +347,14 @@ body {
 }
 .x-body-masked .ext-el-mask {
     background-color: #0000004d;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
     opacity: unset;
+    transition: backdrop-filter 350ms;
 }
+.x-body-masked .ext-el-mask:hover {
+    backdrop-filter: none;
+}
+
 .sm-round-panel .x-window-header {
 	color: #111;
     font-weight: bold;
